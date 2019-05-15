@@ -96,7 +96,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 	sess := session.New(&aws.Config{
 		Credentials: config.credentials,
-		Region: config.region,
+		Region:      config.region,
 	})
 
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
