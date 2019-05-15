@@ -44,9 +44,9 @@ add this section to fluent-bit.conf
 [Output]
     Name s3
     Match *
-    AccessKeyID yourawsaccesskeyid
-    SecretAccessKey yourawssecretacceddkey
-    Bucket yourbucketname
+    AccessKeyID     yourawsaccesskeyid
+    SecretAccessKey yourawssecretaccesskey
+    Bucket          yourbucketname
     S3Prefix yours3prefixname
     S3Region us-east-1
 ```
