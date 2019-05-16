@@ -2,7 +2,7 @@ version: v0-winbuild-{build}
 
 build: off
 
-clone_folder: c:\gopath\src\github.com\cosmo0920\fluent-bit-go-loki
+clone_folder: c:\gopath\src\github.com\cosmo0920\fluent-bit-go-s3
 
 environment:
   matrix:
@@ -26,15 +26,15 @@ before_test:
 
 test_script:
   - go test ./... -v
-  - go build -buildmode=c-shared -o out_loki.dll .
-  - 7z a fluent-bit-go-loki-%PLATFORM%.zip out_loki.dll
-  - set ARTIFACT=fluent-bit-go-loki-%PLATFORM%.zip
+  - go build -buildmode=c-shared -o out_s3.dll .
+  - 7z a fluent-bit-go-s3-%PLATFORM%.zip out_s3.dll
+  - set ARTIFACT=fluent-bit-go-s3-%PLATFORM%.zip
 
 on_success:
   - ps: Push-AppveyorArtifact $Env:ARTIFACT
 
 artifacts:
-  - path: fluent-bit-go-loki-*.zip
+  - path: fluent-bit-go-s3-*.zip
     name: binary
 
 deploy:
