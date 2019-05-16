@@ -42,7 +42,6 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 		creds = credentials.NewEnvCredentials()
 		if _, err := creds.Get(); err != nil {
 			fmt.Println("[EnvCredentials] ERROR:", err)
-
 		} else {
 			return creds, nil
 		}
@@ -55,7 +54,7 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region strin
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse credential")
+		return nil, fmt.Errorf("Failed to create credentials")
 	}
 	conf.credentials = creds
 
