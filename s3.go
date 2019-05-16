@@ -10,7 +10,6 @@ import (
 type s3Config struct {
 	credentials *credentials.Credentials
 	bucket      *string
-	key         *string
 	s3prefix    *string
 	region      *string
 }
