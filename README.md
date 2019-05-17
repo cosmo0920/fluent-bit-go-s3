@@ -32,9 +32,9 @@ $ make
 
 | Key             | Description                                   | Default                           |
 |-----------------|-----------------------------------------------|-----------------------------------|
-| Credential      | URI of AWS shared credential                  | ""                                |
-| AccessKeyID     | Access key ID of AWS                          | ""                                |
-| SecretAccessKey | Secret access key ID of AWS                   | ""                                |
+| Credential      | URI of AWS shared credential                  | "" See [Credentials](#credentials)|
+| AccessKeyID     | Access key ID of AWS                          | "" See [Credentials](#credentials)|
+| SecretAccessKey | Secret access key ID of AWS                   | "" See [Credentials](#credentials)|
 | Bucket          | Bucket name of S3 storage                     | (specifiying required)            |
 | S3Prefix        | S3Prefix of S3 key                            | (specifiying required)            |
 | Region          | Region of S3                                  | (specifiying required)            |
@@ -56,6 +56,10 @@ add this section to fluent-bit.conf
 ```
 
 fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
+
+## Credentials
+
+This plugin supports the following credentials.
 
 ### Shared Credentials
 
