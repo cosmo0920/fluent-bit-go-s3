@@ -47,12 +47,44 @@ add this section to fluent-bit.conf
 [Output]
     Name s3
     Match *
+    # Credential    /path/to/sharedcredentialfile
     AccessKeyID     yourawsaccesskeyid
     SecretAccessKey yourawssecretaccesskey
     Bucket          yourbucketname
     S3Prefix yours3prefixname
     S3Region us-east-1
 ```
+
+fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
+
+### Shared Credentials
+
+Create the following file which includes credentials:
+
+```ini
+[default]
+aws_access_key_id = YOUR_AWS_ACCESS_KEY_ID
+aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
+```
+
+And specify the following parameter in fluent-bit configuration:
+
+```ini
+Credential    /path/to/sharedcredentialfile
+```
+
+### Static Credentials
+
+Specify the following parameters in fluent-bit configuration:
+
+```ini
+AccessKeyID     yourawsaccesskeyid
+SecretAccessKey yourawssecretaccesskey
+```
+
+### Environment Credentials
+
+Specify `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` as environment variables.
 
 ## Useful links
 
