@@ -30,14 +30,14 @@ $ make
 
 ### Configuration Options
 
-| Key             | Description                                   | Default                           |
-|-----------------|-----------------------------------------------|-----------------------------------|
-| Credential      | URI of AWS shared credential                  | "" See [Credentials](#credentials)|
-| AccessKeyID     | Access key ID of AWS                          | "" See [Credentials](#credentials)|
-| SecretAccessKey | Secret access key ID of AWS                   | "" See [Credentials](#credentials)|
-| Bucket          | Bucket name of S3 storage                     | (specifiying required)            |
-| S3Prefix        | S3Prefix of S3 key                            | (specifiying required)            |
-| Region          | Region of S3                                  | (specifiying required)            |
+| Key             | Description                   | Default value | Note                            |
+|-----------------|-------------------------------|---------------|---------------------------------|
+| Credential      | URI of AWS shared credential  | `""`          |(See [Credentials](#credentials))|
+| AccessKeyID     | Access key ID of AWS          | `""`          |(See [Credentials](#credentials))|
+| SecretAccessKey | Secret access key ID of AWS   | `""`          |(See [Credentials](#credentials))|
+| Bucket          | Bucket name of S3 storage     | `-`           | Mandatory parameter             |
+| S3Prefix        | S3Prefix of S3 key            | `-`           | Mandatory parameter             |
+| Region          | Region of S3                  | `-`           | Mandatory parameter             |
 
 Example:
 
