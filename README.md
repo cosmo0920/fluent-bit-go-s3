@@ -59,7 +59,9 @@ fluent-bit-go-s3 supports the following credentials. Users must specify one of t
 
 ## Credentials
 
-This plugin supports the following credentials.
+Specifying credentials is **required**.
+
+This plugin supports the following credentials:
 
 ### Shared Credentials
 
