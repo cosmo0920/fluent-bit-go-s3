@@ -19,6 +19,7 @@ func TestGetS3ConfigStaticCredentials(t *testing.T) {
 }
 
 func TestGetS3ConfigSharedCredentials(t *testing.T) {
+	s3Creds = &testS3Credential{}
 	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
