@@ -52,7 +52,7 @@ add this section to fluent-bit.conf
     SecretAccessKey yourawssecretaccesskey
     Bucket          yourbucketname
     S3Prefix yours3prefixname
-    S3Region us-east-1
+    Region us-east-1
 ```
 
 fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
