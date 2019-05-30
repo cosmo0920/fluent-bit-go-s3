@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/cosmo0920/fluent-bit-go-s3.svg?branch=master)](https://travis-ci.org/cosmo0920/fluent-bit-go-s3)
 [![Build status](https://ci.appveyor.com/api/projects/status/93vh3rocl4yxcmg6/branch/master?svg=true)](https://ci.appveyor.com/project/cosmo0920/fluent-bit-go-s3/branch/master)
 
+Windows binaries are available in [release pages](https://github.com/cosmo0920/fluent-bit-go-s3/releases).
+
 This plugin works with fluent-bit's go plugin interface. You can use fluent-bit-go-s3 to ship logs into AWS S3.
 
 The configuration typically looks like:
