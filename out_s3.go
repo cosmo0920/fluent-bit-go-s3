@@ -2,7 +2,6 @@ package main
 
 import "github.com/fluent/fluent-bit-go/output"
 import "github.com/json-iterator/go"
-import "github.com/google/uuid"
 import "github.com/aws/aws-sdk-go/aws"
 import "github.com/aws/aws-sdk-go/aws/session"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -114,27 +113,15 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	var ret int
-	var ts interface{}
 	var record map[interface{}]interface{}
 
 	dec := plugin.NewDecoder(data, int(length))
+	var lines string
 
 	for {
-		ret, ts, record = plugin.GetRecord(dec)
+		ret, _, record = plugin.GetRecord(dec)
 		if ret != 0 {
 			break
-		}
-
-		// Get timestamp
-		var timestamp time.Time
-		switch t := ts.(type) {
-		case output.FLBTime:
-			timestamp = ts.(output.FLBTime).Time
-		case uint64:
-			timestamp = time.Unix(int64(t), 0)
-		default:
-			fmt.Print("timestamp isn't known format. Use current time.\n")
-			timestamp = time.Now()
 		}
 
 		line, err := createJSON(record)
@@ -142,14 +129,15 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			fmt.Printf("error creating message for S3: %v\n", err)
 			continue
 		}
+		lines += line + "\n"
+	}
 
-		objectKey := GenerateObjectKey(s3Bucket, timestamp)
+	objectKey := GenerateObjectKey(s3Bucket, time.Now())
 
-		err = plugin.Put(objectKey, timestamp, line)
-		if err != nil {
-			fmt.Printf("error sending message for S3: %v\n", err)
-			return output.FLB_RETRY
-		}
+	err := plugin.Put(objectKey, time.Now(), lines)
+	if err != nil {
+		fmt.Printf("error sending message for S3: %v\n", err)
+		return output.FLB_RETRY
 	}
 
 	// Return options:
@@ -165,8 +153,7 @@ func GenerateObjectKey(S3Prefix string, t time.Time) string {
 	timestamp := t.Format("20060102150405")
 	date := t.Format("20060102")
 	hour := strconv.Itoa(t.Hour())
-	logUUID := uuid.Must(uuid.NewRandom()).String()
-	fileName := strings.Join([]string{timestamp, "_", logUUID, ".log"}, "")
+	fileName := strings.Join([]string{timestamp, ".log"}, "")
 
 	objectKey := filepath.Join(S3Prefix, date, hour, fileName)
 	return objectKey

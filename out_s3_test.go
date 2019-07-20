@@ -183,10 +183,12 @@ func TestPluginFlusher(t *testing.T) {
 	plugin = testplugin
 	res := FLBPluginFlush(nil, 0, nil)
 	assert.Equal(t, output.FLB_OK, res)
-	assert.Len(t, testplugin.events, len(testplugin.records))
+	assert.Len(t, testplugin.events, 1) // event length should be 1.
 	var parsed map[string]interface{}
 	json.Unmarshal(testplugin.events[0].data, &parsed)
-	assert.Equal(t, testrecords["mykey"], parsed["mykey"])
-	json.Unmarshal(testplugin.events[1].data, &parsed)
-	json.Unmarshal(testplugin.events[2].data, &parsed)
+	expected := `{"mykey":"myvalue"}
+{"mykey":"myvalue"}
+{"mykey":"myvalue"}
+`
+	assert.Equal(t, expected, string(testplugin.events[0].data))
 }
