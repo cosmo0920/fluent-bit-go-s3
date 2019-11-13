@@ -159,7 +159,7 @@ func GenerateObjectKey(S3Prefix string, t time.Time) string {
 	return objectKey
 }
 
-func createJSON(record map[interface{}]interface{}) (string, error) {
+func encodeJSON(record map[interface{}]interface{}) map[string]interface{} {
 	m := make(map[string]interface{})
 
 	for k, v := range record {
@@ -167,10 +167,20 @@ func createJSON(record map[interface{}]interface{}) (string, error) {
 		case []byte:
 			// prevent encoding to base64
 			m[k.(string)] = string(t)
+		case map[interface{}]interface{}:
+			if nextValue, ok := record[k].(map[interface{}]interface{}); ok {
+				m[k.(string)] = encodeJSON(nextValue)
+			}
 		default:
 			m[k.(string)] = v
 		}
 	}
+
+	return m
+}
+
+func createJSON(record map[interface{}]interface{}) (string, error) {
+	m := encodeJSON(record)
 
 	js, err := jsoniter.Marshal(m)
 	if err != nil {
