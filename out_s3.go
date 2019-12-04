@@ -87,6 +87,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		plugin.Exit(1)
 		return output.FLB_ERROR
 	}
+	fmt.Printf("[flb-go] Starting fluent-bit-go-s3: %s\n", version.Info())
 	fmt.Printf("[flb-go] plugin credential parameter = '%s'\n", credential)
 	fmt.Printf("[flb-go] plugin accessKeyID parameter = '%s'\n", accessKeyID)
 	fmt.Printf("[flb-go] plugin secretAccessKey parameter = '%s'\n", secretAccessKey)
