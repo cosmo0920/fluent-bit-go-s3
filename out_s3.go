@@ -5,6 +5,7 @@ import "github.com/json-iterator/go"
 import "github.com/aws/aws-sdk-go/aws"
 import "github.com/aws/aws-sdk-go/aws/session"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
+import "github.com/prometheus/common/version"
 
 import (
 	"C"
@@ -86,6 +87,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		plugin.Exit(1)
 		return output.FLB_ERROR
 	}
+	fmt.Printf("[flb-go] Starting fluent-bit-go-s3: %s\n", version.Info())
 	fmt.Printf("[flb-go] plugin credential parameter = '%s'\n", credential)
 	fmt.Printf("[flb-go] plugin accessKeyID parameter = '%s'\n", accessKeyID)
 	fmt.Printf("[flb-go] plugin secretAccessKey parameter = '%s'\n", secretAccessKey)
