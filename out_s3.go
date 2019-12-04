@@ -5,6 +5,7 @@ import "github.com/json-iterator/go"
 import "github.com/aws/aws-sdk-go/aws"
 import "github.com/aws/aws-sdk-go/aws/session"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
+import "github.com/prometheus/common/version"
 
 import (
 	"C"
