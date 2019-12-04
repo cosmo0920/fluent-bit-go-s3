@@ -17,7 +17,7 @@ environment:
       GOROOT: c:\go-x86
       GOARCH: 386
 
-stack: go 1.11
+stack: go 1.13
 
 before_test:
   - set GOARCH=%GOARCH%
