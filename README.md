@@ -29,7 +29,12 @@ $ docker build . -t fluent-bit/s3-plugin
 and then, specify Url parameter as environment variable:
 
 ```bash
-$ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" -e="FLUENT_BIT_SECRET_ACCESS_KEY=yourawsaccesssecret" -e="FLUENT_BIT_BUCKET_NAME=yourbucketname" -e="FLUENT_BIT_S3_PREFIX=yours3prefix" -e="FLUENT_BIT_REGION=awsregion" fluent-bit/s3-plugin
+$ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
+                 -e="FLUENT_BIT_SECRET_ACCESS_KEY=yourawsaccesssecret" \
+                 -e="FLUENT_BIT_BUCKET_NAME=yourbucketname" \
+                 -e="FLUENT_BIT_S3_PREFIX=yours3prefix" \
+                 -e="FLUENT_BIT_REGION=awsregion" \
+                 fluent-bit/s3-plugin
 ```
 
 Using docker image from docker hub.
