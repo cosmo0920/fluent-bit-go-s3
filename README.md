@@ -19,6 +19,27 @@ fluent-bit --> AWS S3
 $ fluent-bit -e /path/to/built/out_s3.so -c fluent-bit.conf
 ```
 
+Or,
+
+
+```bash
+$ docker build . -t fluent-bit/s3-plugin
+```
+
+and then, specify Url parameter as environment variable:
+
+```bash
+$ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" -e="FLUENT_BIT_SECRET_ACCESS_KEY=yourawsaccesssecret" -e="FLUENT_BIT_BUCKET_NAME=yourbucketname" -e="FLUENT_BIT_S3_PREFIX=yours3prefix" -e="FLUENT_BIT_REGION=awsregion" fluent-bit/s3-plugin
+```
+
+Using docker image from docker hub.
+
+```bash
+$ docker pull cosmo0920/fluent-bit-go-s3:latest
+```
+
+Other released images are available in [DockerHub's fluent-bit-go-s3 image tags](https://hub.docker.com/r/cosmo0920/fluent-bit-go-s3/tags).
+
 # Prerequisites
 
 * Go 1.11+
