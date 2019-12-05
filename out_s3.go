@@ -9,6 +9,8 @@ import "github.com/prometheus/common/version"
 
 import (
 	"C"
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,6 +25,7 @@ var plugin GoOutputPlugin = &fluentPlugin{}
 var s3Bucket string
 var s3Prefix string
 var s3Uploader *s3manager.Uploader
+var s3CompressFormat format
 
 type GoOutputPlugin interface {
 	PluginConfigKey(ctx unsafe.Pointer, key string) string
@@ -56,12 +59,43 @@ func (p *fluentPlugin) Exit(code int) {
 }
 
 func (p *fluentPlugin) Put(objectKey string, timestamp time.Time, line string) error {
-	_, err := s3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s3Bucket),
-		Key:    aws.String(objectKey),
-		Body:   strings.NewReader(line),
-	})
-	return err
+	switch s3CompressFormat {
+	case plainTextFormat:
+		_, err := s3Uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(s3Bucket),
+			Key:    aws.String(objectKey),
+			Body:   strings.NewReader(line),
+		})
+		return err
+	case gzipFormat:
+		compressed, err := makeGzip([]byte(line))
+		_, err = s3Uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(s3Bucket),
+			Key:    aws.String(objectKey),
+			Body:   bytes.NewReader(compressed),
+		})
+		return err
+	}
+
+	return nil
+}
+
+// based on https://text.baldanders.info/golang/gzip-operation/
+func makeGzip(body []byte) ([]byte, error) {
+	var b bytes.Buffer
+	err := func() error {
+		gw := gzip.NewWriter(&b)
+		gw.Name = "fluent-bit-go-s3"
+		gw.ModTime = time.Now()
+
+		defer gw.Close()
+
+		if _, err := gw.Write(body); err != nil {
+			return err
+		}
+		return nil
+	}()
+	return b.Bytes(), err
 }
 
 //export FLBPluginRegister
@@ -80,8 +114,9 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 	bucket := plugin.PluginConfigKey(ctx, "Bucket")
 	s3prefix := plugin.PluginConfigKey(ctx, "S3Prefix")
 	region := plugin.PluginConfigKey(ctx, "Region")
+	compress := plugin.PluginConfigKey(ctx, "Compress")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress)
 	if err != nil {
 		plugin.Unregister(ctx)
 		plugin.Exit(1)
@@ -94,6 +129,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 	fmt.Printf("[flb-go] plugin bucket parameter = '%s'\n", bucket)
 	fmt.Printf("[flb-go] plugin s3prefix parameter = '%s'\n", s3prefix)
 	fmt.Printf("[flb-go] plugin region parameter = '%s'\n", region)
+	fmt.Printf("[flb-go] plugin compress parameter = '%s'\n", compress)
 
 	sess := session.New(&aws.Config{
 		Credentials: config.credentials,
@@ -108,6 +144,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 	s3Uploader = uploader
 	s3Bucket = *config.bucket
 	s3Prefix = *config.s3prefix
+	s3CompressFormat = config.compress
 
 	return output.FLB_OK
 }
@@ -135,7 +172,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	}
 
 	objectKey := GenerateObjectKey(s3Bucket, time.Now())
-
 	err := plugin.Put(objectKey, time.Now(), lines)
 	if err != nil {
 		fmt.Printf("error sending message for S3: %v\n", err)
@@ -152,10 +188,19 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 // format is S3_PREFIX/S3_TRAILING_PREFIX/date/hour/timestamp_uuid.log
 func GenerateObjectKey(S3Prefix string, t time.Time) string {
+	var fileext string
+	fmt.Printf("%v\n", s3CompressFormat)
+	switch s3CompressFormat {
+	case plainTextFormat:
+		fileext = ".log"
+	case gzipFormat:
+		fileext = ".log.gz"
+	}
 	timestamp := t.Format("20060102150405")
 	date := t.Format("20060102")
 	hour := strconv.Itoa(t.Hour())
-	fileName := strings.Join([]string{timestamp, ".log"}, "")
+
+	fileName := strings.Join([]string{timestamp, fileext}, "")
 
 	objectKey := filepath.Join(S3Prefix, date, hour, fileName)
 	return objectKey

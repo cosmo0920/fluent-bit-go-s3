@@ -7,11 +7,19 @@ import (
 	"fmt"
 )
 
+type format int
+
+const (
+	plainTextFormat format = iota
+	gzipFormat
+)
+
 type s3Config struct {
 	credentials *credentials.Credentials
 	bucket      *string
 	s3prefix    *string
 	region      *string
+	compress    format
 }
 
 type S3Credential interface {
@@ -50,7 +58,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, fmt.Errorf("Failed to create credentials")
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -72,6 +80,13 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region strin
 		return nil, fmt.Errorf("Cannot specify empty string to region")
 	}
 	conf.region = aws.String(region)
+
+	switch compress {
+	case "gzip":
+		conf.compress = gzipFormat
+	default:
+		conf.compress = plainTextFormat
+	}
 
 	return conf, nil
 }
