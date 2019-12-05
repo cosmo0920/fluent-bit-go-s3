@@ -66,6 +66,7 @@ $ make
 | Bucket          | Bucket name of S3 storage     | `-`           | Mandatory parameter             |
 | S3Prefix        | S3Prefix of S3 key            | `-`           | Mandatory parameter             |
 | Region          | Region of S3                  | `-`           | Mandatory parameter             |
+| Compress        | Choose Compress method        | `""`          | gzip or plainText(`""`)         |
 
 Example:
 
@@ -81,6 +82,7 @@ add this section to fluent-bit.conf
     Bucket          yourbucketname
     S3Prefix yours3prefixname
     Region us-east-1
+    Compress gzip
 ```
 
 fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
