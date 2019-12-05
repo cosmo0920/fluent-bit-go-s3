@@ -22,10 +22,14 @@ import (
 
 var plugin GoOutputPlugin = &fluentPlugin{}
 
-var s3Bucket string
-var s3Prefix string
-var s3Uploader *s3manager.Uploader
-var s3CompressFormat format
+type s3 struct {
+	bucket         string
+	prefix         string
+	uploader       *s3manager.Uploader
+	compressFormat format
+}
+
+var s3operator s3
 
 type GoOutputPlugin interface {
 	PluginConfigKey(ctx unsafe.Pointer, key string) string
@@ -59,18 +63,18 @@ func (p *fluentPlugin) Exit(code int) {
 }
 
 func (p *fluentPlugin) Put(objectKey string, timestamp time.Time, line string) error {
-	switch s3CompressFormat {
+	switch s3operator.compressFormat {
 	case plainTextFormat:
-		_, err := s3Uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(s3Bucket),
+		_, err := s3operator.uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(s3operator.bucket),
 			Key:    aws.String(objectKey),
 			Body:   strings.NewReader(line),
 		})
 		return err
 	case gzipFormat:
 		compressed, err := makeGzip([]byte(line))
-		_, err = s3Uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(s3Bucket),
+		_, err = s3operator.uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(s3operator.bucket),
 			Key:    aws.String(objectKey),
 			Body:   bytes.NewReader(compressed),
 		})
@@ -141,10 +145,12 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		u.LeavePartsOnError = true
 	})
 
-	s3Uploader = uploader
-	s3Bucket = *config.bucket
-	s3Prefix = *config.s3prefix
-	s3CompressFormat = config.compress
+	s3operator = s3{
+		bucket:         *config.bucket,
+		prefix:         *config.s3prefix,
+		uploader:       uploader,
+		compressFormat: config.compress,
+	}
 
 	return output.FLB_OK
 }
@@ -171,7 +177,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		lines += line + "\n"
 	}
 
-	objectKey := GenerateObjectKey(s3Bucket, time.Now())
+	objectKey := GenerateObjectKey(s3operator.bucket, time.Now())
 	err := plugin.Put(objectKey, time.Now(), lines)
 	if err != nil {
 		fmt.Printf("error sending message for S3: %v\n", err)
@@ -189,8 +195,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 // format is S3_PREFIX/S3_TRAILING_PREFIX/date/hour/timestamp_uuid.log
 func GenerateObjectKey(S3Prefix string, t time.Time) string {
 	var fileext string
-	fmt.Printf("%v\n", s3CompressFormat)
-	switch s3CompressFormat {
+	switch s3operator.compressFormat {
 	case plainTextFormat:
 		fileext = ".log"
 	case gzipFormat:
@@ -202,7 +207,7 @@ func GenerateObjectKey(S3Prefix string, t time.Time) string {
 
 	fileName := strings.Join([]string{timestamp, fileext}, "")
 
-	objectKey := filepath.Join(S3Prefix, date, hour, fileName)
+	objectKey := filepath.Join(s3operator.prefix, date, hour, fileName)
 	return objectKey
 }
 
