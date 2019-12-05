@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 	"unsafe"
@@ -91,6 +94,45 @@ func TestGenerateObjectKey(t *testing.T) {
 	objectKey := GenerateObjectKey("s3exampleprefix", now)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+func TestGenerateObjectKeyWithGzip(t *testing.T) {
+	now := time.Now()
+	s3operator = s3{
+		compressFormat: gzipFormat,
+	}
+	objectKey := GenerateObjectKey("s3exampleprefix", now)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+// based on https://text.baldanders.info/golang/gzip-operation/
+func readGzip(dst io.Writer, src io.Reader) error {
+	zr, err := gzip.NewReader(src)
+	if err != nil {
+		return err
+	}
+	defer zr.Close()
+
+	io.Copy(dst, zr)
+
+	return nil
+}
+
+func TestMakeGzip(t *testing.T) {
+	var line = "a gzipped string line which is compressed by compress/gzip library written in Go."
+
+	compressed, err := makeGzip([]byte(line))
+	if err != nil {
+		assert.Fail(t, "compress string with gzip fails:%v", err)
+	}
+
+	var b bytes.Buffer
+	err = readGzip(&b, bytes.NewReader(compressed))
+	if err != nil {
+		assert.Fail(t, "decompress from gzippped string fails:%v", err)
+	}
+	assert.Equal(t, line, b.String())
 }
 
 type testrecord struct {
