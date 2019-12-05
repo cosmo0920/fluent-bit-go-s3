@@ -73,6 +73,9 @@ func (p *fluentPlugin) Put(objectKey string, timestamp time.Time, line string) e
 		return err
 	case gzipFormat:
 		compressed, err := makeGzip([]byte(line))
+		if err != nil {
+			return err
+		}
 		_, err = s3operator.uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String(s3operator.bucket),
 			Key:    aws.String(objectKey),
