@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 	"unsafe"
@@ -93,6 +96,45 @@ func TestGenerateObjectKey(t *testing.T) {
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
 
+func TestGenerateObjectKeyWithGzip(t *testing.T) {
+	now := time.Now()
+	s3operator = s3{
+		compressFormat: gzipFormat,
+	}
+	objectKey := GenerateObjectKey("s3exampleprefix", now)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+// based on https://text.baldanders.info/golang/gzip-operation/
+func readGzip(dst io.Writer, src io.Reader) error {
+	zr, err := gzip.NewReader(src)
+	if err != nil {
+		return err
+	}
+	defer zr.Close()
+
+	io.Copy(dst, zr)
+
+	return nil
+}
+
+func TestMakeGzip(t *testing.T) {
+	var line = "a gzipped string line which is compressed by compress/gzip library written in Go."
+
+	compressed, err := makeGzip([]byte(line))
+	if err != nil {
+		assert.Fail(t, "compress string with gzip fails:%v", err)
+	}
+
+	var b bytes.Buffer
+	err = readGzip(&b, bytes.NewReader(compressed))
+	if err != nil {
+		assert.Fail(t, "decompress from gzippped string fails:%v", err)
+	}
+	assert.Equal(t, line, b.String())
+}
+
 type testrecord struct {
 	rc   int
 	ts   interface{}
@@ -109,6 +151,7 @@ type testFluentPlugin struct {
 	bucket          string
 	s3prefix        string
 	region          string
+	compress        string
 	records         []testrecord
 	position        int
 	events          []*events
@@ -128,6 +171,8 @@ func (p *testFluentPlugin) PluginConfigKey(ctx unsafe.Pointer, key string) strin
 		return p.s3prefix
 	case "Region":
 		return p.region
+	case "Compress":
+		return p.compress
 	}
 	return "unknown-" + key
 }
@@ -187,7 +232,7 @@ func (c *testS3Credential) GetCredentials(accessID, secretkey, credential string
 
 func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion")
+	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -197,6 +242,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 		bucket:          "examplebucket",
 		s3prefix:        "exampleprefix",
 		region:          "exampleregion",
+		compress:        "",
 	}
 	res := FLBPluginInit(nil)
 	assert.Equal(t, output.FLB_OK, res)
@@ -204,7 +250,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 
 func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -213,6 +259,7 @@ func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 		bucket:     "examplebucket",
 		s3prefix:   "exampleprefix",
 		region:     "exampleregion",
+		compress:   "",
 	}
 	res := FLBPluginInit(nil)
 	assert.Equal(t, output.FLB_OK, res)
@@ -225,6 +272,7 @@ func TestPluginFlusher(t *testing.T) {
 		secretAccessKey: "examplesecretaccesskey",
 		bucket:          "examplebucket",
 		s3prefix:        "exampleprefix",
+		compress:        "",
 	}
 	ts := time.Date(2019, time.March, 10, 10, 11, 12, 0, time.UTC)
 	testrecords := map[interface{}]interface{}{
