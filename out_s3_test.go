@@ -67,8 +67,7 @@ func TestCreateJSONWithNestedKey(t *testing.T) {
 	record := make(map[interface{}]interface{})
 	record["key"] = "value"
 	record["number"] = 8
-	record["nested"] = map[interface{}]interface{}{"key": map[interface{}]interface{}{"key2":"not base64 encoded"}}
-
+	record["nested"] = map[interface{}]interface{}{"key": map[interface{}]interface{}{"key2": "not base64 encoded"}}
 
 	line, err := createJSON(record)
 	if err != nil {
