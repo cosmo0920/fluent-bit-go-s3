@@ -29,14 +29,12 @@ type s3 struct {
 	compressFormat format
 }
 
-var s3operator s3
-
 type GoOutputPlugin interface {
 	PluginConfigKey(ctx unsafe.Pointer, key string) string
 	Unregister(ctx unsafe.Pointer)
 	GetRecord(dec *output.FLBDecoder) (ret int, ts interface{}, rec map[interface{}]interface{})
 	NewDecoder(data unsafe.Pointer, length int) *output.FLBDecoder
-	Put(objectKey string, timestamp time.Time, line string) error
+	Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error
 	Exit(code int)
 }
 
@@ -62,7 +60,7 @@ func (p *fluentPlugin) Exit(code int) {
 	os.Exit(code)
 }
 
-func (p *fluentPlugin) Put(objectKey string, timestamp time.Time, line string) error {
+func (p *fluentPlugin) Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error {
 	switch s3operator.compressFormat {
 	case plainTextFormat:
 		_, err := s3operator.uploader.Upload(&s3manager.UploadInput{
@@ -110,10 +108,11 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 	return output.FLBPluginRegister(ctx, "s3", "S3 Output plugin written in GO!")
 }
 
-//export FLBPluginInit
-// (fluentbit will call this)
-// ctx (context) pointer to fluentbit context (state/ c code)
-func FLBPluginInit(ctx unsafe.Pointer) int {
+var (
+	s3operators []*s3
+)
+
+func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 	// Example to retrieve an optional configuration parameter
 	credential := plugin.PluginConfigKey(ctx, "Credential")
 	accessKeyID := plugin.PluginConfigKey(ctx, "AccessKeyID")
@@ -125,18 +124,16 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress)
 	if err != nil {
-		plugin.Unregister(ctx)
-		plugin.Exit(1)
-		return output.FLB_ERROR
+		return nil, err
 	}
-	fmt.Printf("[flb-go] Starting fluent-bit-go-s3: %s\n", version.Info())
-	fmt.Printf("[flb-go] plugin credential parameter = '%s'\n", credential)
-	fmt.Printf("[flb-go] plugin accessKeyID parameter = '%s'\n", accessKeyID)
-	fmt.Printf("[flb-go] plugin secretAccessKey parameter = '%s'\n", secretAccessKey)
-	fmt.Printf("[flb-go] plugin bucket parameter = '%s'\n", bucket)
-	fmt.Printf("[flb-go] plugin s3prefix parameter = '%s'\n", s3prefix)
-	fmt.Printf("[flb-go] plugin region parameter = '%s'\n", region)
-	fmt.Printf("[flb-go] plugin compress parameter = '%s'\n", compress)
+	fmt.Printf("[flb-go %d] Starting fluent-bit-go-s3: %s\n", operatorID, version.Info())
+	fmt.Printf("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
+	fmt.Printf("[flb-go %d] plugin accessKeyID parameter = '%s'\n", operatorID, accessKeyID)
+	fmt.Printf("[flb-go %d] plugin secretAccessKey parameter = '%s'\n", operatorID, secretAccessKey)
+	fmt.Printf("[flb-go %d] plugin bucket parameter = '%s'\n", operatorID, bucket)
+	fmt.Printf("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
+	fmt.Printf("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
+	fmt.Printf("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
 
 	sess := session.New(&aws.Config{
 		Credentials: config.credentials,
@@ -148,11 +145,45 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		u.LeavePartsOnError = true
 	})
 
-	s3operator = s3{
+	s3operator := &s3{
 		bucket:         *config.bucket,
 		prefix:         *config.s3prefix,
 		uploader:       uploader,
 		compressFormat: config.compress,
+	}
+
+	return s3operator, nil
+
+}
+
+func addS3Output(ctx unsafe.Pointer) error {
+	operatorID := len(s3operators)
+	fmt.Printf("[s3operator] id = %q\n", operatorID)
+	// Set the context to point to any Go variable
+	output.FLBPluginSetContext(ctx, operatorID)
+	operator, err := newS3Output(ctx, operatorID)
+	if err != nil {
+		return err
+	}
+
+	s3operators = append(s3operators, operator)
+	return nil
+}
+
+func getS3Operator(ctx unsafe.Pointer) *s3 {
+	operatorID := output.FLBPluginGetContext(ctx).(int)
+	return s3operators[operatorID]
+}
+
+//export FLBPluginInit
+// (fluentbit will call this)
+// ctx (context) pointer to fluentbit context (state/ c code)
+func FLBPluginInit(ctx unsafe.Pointer) int {
+	err := addS3Output(ctx)
+	if err != nil {
+		plugin.Unregister(ctx)
+		plugin.Exit(1)
+		return output.FLB_ERROR
 	}
 
 	return output.FLB_OK
@@ -160,9 +191,15 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
+	return output.FLB_OK
+}
+
+//export FLBPluginFlushCtx
+func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int {
 	var ret int
 	var record map[interface{}]interface{}
 
+	s3operator := getS3Operator(ctx)
 	dec := plugin.NewDecoder(data, int(length))
 	var lines string
 
@@ -180,8 +217,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		lines += line + "\n"
 	}
 
-	objectKey := GenerateObjectKey(s3operator.bucket, time.Now())
-	err := plugin.Put(objectKey, time.Now(), lines)
+	objectKey := GenerateObjectKey(s3operator, time.Now())
+	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
 		fmt.Printf("error sending message for S3: %v\n", err)
 		return output.FLB_RETRY
@@ -196,7 +233,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 }
 
 // format is S3_PREFIX/S3_TRAILING_PREFIX/date/hour/timestamp_uuid.log
-func GenerateObjectKey(S3Prefix string, t time.Time) string {
+func GenerateObjectKey(s3operator *s3, t time.Time) string {
 	var fileext string
 	switch s3operator.compressFormat {
 	case plainTextFormat:
