@@ -91,17 +91,26 @@ func TestCreateJSONWithNestedKey(t *testing.T) {
 
 func TestGenerateObjectKey(t *testing.T) {
 	now := time.Now()
-	objectKey := GenerateObjectKey("s3exampleprefix", now)
+	s3mock := &s3{
+		bucket:         "s3examplebucket",
+		prefix:         "s3exampleprefix",
+		uploader:       nil,
+		compressFormat: plainTextFormat,
+	}
+	objectKey := GenerateObjectKey(s3mock, now)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
 
 func TestGenerateObjectKeyWithGzip(t *testing.T) {
 	now := time.Now()
-	s3operator = s3{
+	s3mock := &s3{
+		bucket:         "s3examplebucket",
+		prefix:         "s3exampleprefix",
+		uploader:       nil,
 		compressFormat: gzipFormat,
 	}
-	objectKey := GenerateObjectKey("s3exampleprefix", now)
+	objectKey := GenerateObjectKey(s3mock, now)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
@@ -188,7 +197,7 @@ func (p *testFluentPlugin) GetRecord(dec *output.FLBDecoder) (int, interface{}, 
 }
 func (p *testFluentPlugin) NewDecoder(data unsafe.Pointer, length int) *output.FLBDecoder { return nil }
 func (p *testFluentPlugin) Exit(code int)                                                 {}
-func (p *testFluentPlugin) Put(objectKey string, timestamp time.Time, line string) error {
+func (p *testFluentPlugin) Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error {
 	data := ([]byte)(line)
 	events := &events{data: data}
 	p.events = append(p.events, events)
