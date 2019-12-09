@@ -154,12 +154,19 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 		uploader:       uploader,
 		compressFormat: config.compress,
 	}
+	output.FLBPluginSetContext(ctx, unsafe.Pointer(config.bucket))
+
 
 	return output.FLB_OK
 }
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
+	return output.FLB_OK
+}
+
+//export FLBPluginFlushCtx
+func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int {
 	var ret int
 	var record map[interface{}]interface{}
 

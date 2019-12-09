@@ -244,7 +244,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 		region:          "exampleregion",
 		compress:        "",
 	}
-	res := FLBPluginInit(nil)
+	res := FLBPluginInit(unsafe.Pointer(&plugin))
 	assert.Equal(t, output.FLB_OK, res)
 }
 
@@ -261,7 +261,7 @@ func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 		region:     "exampleregion",
 		compress:   "",
 	}
-	res := FLBPluginInit(nil)
+	res := FLBPluginInit(unsafe.Pointer(&plugin))
 	assert.Equal(t, output.FLB_OK, res)
 }
 
@@ -282,7 +282,7 @@ func TestPluginFlusher(t *testing.T) {
 	testplugin.addrecord(0, uint64(ts.Unix()), testrecords)
 	testplugin.addrecord(0, 0, testrecords)
 	plugin = testplugin
-	res := FLBPluginFlush(nil, 0, nil)
+	res := FLBPluginFlushCtx(nil, nil, 0, nil)
 	assert.Equal(t, output.FLB_OK, res)
 	assert.Len(t, testplugin.events, 1) // event length should be 1.
 	var parsed map[string]interface{}
