@@ -26,7 +26,7 @@ Or,
 $ docker build . -t fluent-bit/s3-plugin
 ```
 
-and then, specify Url parameter as environment variable:
+and then, specify Url parameter as environment variables:
 
 ```bash
 $ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
@@ -70,7 +70,7 @@ $ make
 
 Example:
 
-add this section to fluent-bit.conf
+Add this section to fluent-bit.conf:
 
 ```properties
 [Output]
@@ -103,7 +103,7 @@ aws_access_key_id = YOUR_AWS_ACCESS_KEY_ID
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 
-And specify the following parameter in fluent-bit configuration:
+Then, specify the following parameter in fluent-bit configuration:
 
 ```ini
 Credential    /path/to/sharedcredentialfile
