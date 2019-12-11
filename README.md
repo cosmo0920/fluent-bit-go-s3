@@ -67,6 +67,7 @@ $ make
 | S3Prefix        | S3Prefix of S3 key            | `-`           | Mandatory parameter             |
 | Region          | Region of S3                  | `-`           | Mandatory parameter             |
 | Compress        | Choose Compress method        | `""`          | gzip or plainText(`""`)         |
+| Endpoint        | Specify the endpoint URL      | `""`          | URL with port or empty string   |
 
 Example:
 
@@ -83,6 +84,8 @@ Add this section to fluent-bit.conf:
     S3Prefix yours3prefixname
     Region us-east-1
     Compress gzip
+    # Endpoint parameter is mainly used for minio.
+    # Endpoint http://localhost:9000
 ```
 
 fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
