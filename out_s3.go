@@ -121,8 +121,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 	s3prefix := plugin.PluginConfigKey(ctx, "S3Prefix")
 	region := plugin.PluginConfigKey(ctx, "Region")
 	compress := plugin.PluginConfigKey(ctx, "Compress")
+	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -134,11 +135,17 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 	fmt.Printf("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
 	fmt.Printf("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
 	fmt.Printf("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
+	fmt.Printf("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
 
-	sess := session.New(&aws.Config{
+	cfg := aws.Config{
 		Credentials: config.credentials,
 		Region:      config.region,
-	})
+	}
+	if config.endpoint != "" {
+		cfg.WithEndpoint(config.endpoint).WithS3ForcePathStyle(true)
+	}
+
+	sess := session.New(&cfg)
 
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024

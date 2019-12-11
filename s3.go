@@ -20,6 +20,7 @@ type s3Config struct {
 	s3prefix    *string
 	region      *string
 	compress    format
+	endpoint    string
 }
 
 type S3Credential interface {
@@ -58,7 +59,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, fmt.Errorf("Failed to create credentials")
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -86,6 +87,10 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 		conf.compress = gzipFormat
 	default:
 		conf.compress = plainTextFormat
+	}
+
+	if endpoint != "" {
+		conf.endpoint = endpoint
 	}
 
 	return conf, nil
