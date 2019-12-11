@@ -5,6 +5,7 @@ import "github.com/aws/aws-sdk-go/aws/credentials"
 
 import (
 	"fmt"
+	"strings"
 )
 
 type format int
@@ -90,6 +91,9 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 	}
 
 	if endpoint != "" {
+		if strings.HasSuffix(endpoint, "amazonaws.com") {
+			return nil, fmt.Errorf("Endpoint is not supported for AWS S3. This parameter is intended for S3 compatible services. Use Region instead.")
+		}
 		conf.endpoint = endpoint
 	}
 
