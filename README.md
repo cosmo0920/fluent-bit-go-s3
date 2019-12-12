@@ -69,6 +69,7 @@ $ make
 | Compress         | Choose Compress method        | `""`          | gzip or plainText(`""`)         |
 | Endpoint         | Specify the endpoint URL      | `""`          | URL with port or empty string   |
 | AutoCreateBucket | Create bucket automatically   | `false`       | true/false                      |
+| LogLevel         | Specify Log Level             | `"info"`      | trace/debug/info/warning/error/fatal/panic     |
 
 Example:
 
