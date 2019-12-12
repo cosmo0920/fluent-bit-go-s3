@@ -22,7 +22,7 @@ import (
 
 var plugin GoOutputPlugin = &fluentPlugin{}
 
-type s3 struct {
+type s3operator struct {
 	bucket         string
 	prefix         string
 	uploader       *s3manager.Uploader
@@ -34,7 +34,7 @@ type GoOutputPlugin interface {
 	Unregister(ctx unsafe.Pointer)
 	GetRecord(dec *output.FLBDecoder) (ret int, ts interface{}, rec map[interface{}]interface{})
 	NewDecoder(data unsafe.Pointer, length int) *output.FLBDecoder
-	Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error
+	Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error
 	Exit(code int)
 }
 
@@ -60,7 +60,7 @@ func (p *fluentPlugin) Exit(code int) {
 	os.Exit(code)
 }
 
-func (p *fluentPlugin) Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error {
+func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error {
 	switch s3operator.compressFormat {
 	case plainTextFormat:
 		_, err := s3operator.uploader.Upload(&s3manager.UploadInput{
@@ -109,10 +109,10 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 }
 
 var (
-	s3operators []*s3
+	s3operators []*s3operator
 )
 
-func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
+func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	// Example to retrieve an optional configuration parameter
 	credential := plugin.PluginConfigKey(ctx, "Credential")
 	accessKeyID := plugin.PluginConfigKey(ctx, "AccessKeyID")
@@ -152,7 +152,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 		u.LeavePartsOnError = true
 	})
 
-	s3operator := &s3{
+	s3operator := &s3operator{
 		bucket:         *config.bucket,
 		prefix:         *config.s3prefix,
 		uploader:       uploader,
@@ -177,7 +177,7 @@ func addS3Output(ctx unsafe.Pointer) error {
 	return nil
 }
 
-func getS3Operator(ctx unsafe.Pointer) *s3 {
+func getS3Operator(ctx unsafe.Pointer) *s3operator {
 	operatorID := output.FLBPluginGetContext(ctx).(int)
 	return s3operators[operatorID]
 }
@@ -240,7 +240,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 }
 
 // format is S3_PREFIX/S3_TRAILING_PREFIX/date/hour/timestamp_uuid.log
-func GenerateObjectKey(s3operator *s3, t time.Time) string {
+func GenerateObjectKey(s3operator *s3operator, t time.Time) string {
 	var fileext string
 	switch s3operator.compressFormat {
 	case plainTextFormat:
