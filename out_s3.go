@@ -35,6 +35,7 @@ type s3operator struct {
 	prefix         string
 	uploader       *s3manager.Uploader
 	compressFormat format
+	logger         *log.Logger
 }
 
 type GoOutputPlugin interface {
@@ -181,7 +182,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger = newLogger(config.logLevel)
+	logger := newLogger(config.logLevel)
 
 	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v\n", operatorID, version.Info())
 	logger.Infof("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
@@ -221,6 +222,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 		prefix:         *config.s3prefix,
 		uploader:       uploader,
 		compressFormat: config.compress,
+		logger:         logger,
 	}
 
 	return s3operator, nil
@@ -282,7 +284,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 		line, err := createJSON(record)
 		if err != nil {
-			logger.Warnf("error creating message for S3: %v\n", err)
+			s3operator.logger.Warnf("error creating message for S3: %v\n", err)
 			continue
 		}
 		lines += line + "\n"
@@ -291,7 +293,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
 	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
-		logger.Warnf("error sending message for S3: %v\n", err)
+		s3operator.logger.Warnf("error sending message for S3: %v\n", err)
 		return output.FLB_RETRY
 	}
 
