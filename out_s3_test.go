@@ -90,7 +90,7 @@ func TestCreateJSONWithNestedKey(t *testing.T) {
 
 func TestGenerateObjectKey(t *testing.T) {
 	now := time.Now()
-	s3mock := &s3{
+	s3mock := &s3operator{
 		bucket:         "s3examplebucket",
 		prefix:         "s3exampleprefix",
 		uploader:       nil,
@@ -103,7 +103,7 @@ func TestGenerateObjectKey(t *testing.T) {
 
 func TestGenerateObjectKeyWithGzip(t *testing.T) {
 	now := time.Now()
-	s3mock := &s3{
+	s3mock := &s3operator{
 		bucket:         "s3examplebucket",
 		prefix:         "s3exampleprefix",
 		uploader:       nil,
@@ -153,17 +153,18 @@ type events struct {
 	data []byte
 }
 type testFluentPlugin struct {
-	credential      string
-	accessKeyID     string
-	secretAccessKey string
-	bucket          string
-	s3prefix        string
-	region          string
-	compress        string
-	endpoint        string
-	records         []testrecord
-	position        int
-	events          []*events
+	credential       string
+	accessKeyID      string
+	secretAccessKey  string
+	bucket           string
+	s3prefix         string
+	region           string
+	compress         string
+	endpoint         string
+	autoCreateBucket string
+	records          []testrecord
+	position         int
+	events           []*events
 }
 
 func (p *testFluentPlugin) PluginConfigKey(ctx unsafe.Pointer, key string) string {
@@ -184,6 +185,8 @@ func (p *testFluentPlugin) PluginConfigKey(ctx unsafe.Pointer, key string) strin
 		return p.compress
 	case "Endpoint":
 		return p.endpoint
+	case "AutoCreateBucket":
+		return p.autoCreateBucket
 	}
 	return "unknown-" + key
 }
@@ -199,7 +202,7 @@ func (p *testFluentPlugin) GetRecord(dec *output.FLBDecoder) (int, interface{}, 
 }
 func (p *testFluentPlugin) NewDecoder(data unsafe.Pointer, length int) *output.FLBDecoder { return nil }
 func (p *testFluentPlugin) Exit(code int)                                                 {}
-func (p *testFluentPlugin) Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error {
+func (p *testFluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error {
 	data := ([]byte)(line)
 	events := &events{data: data}
 	p.events = append(p.events, events)
@@ -243,18 +246,19 @@ func (c *testS3Credential) GetCredentials(accessID, secretkey, credential string
 
 func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "")
+	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
 	plugin = &testFluentPlugin{
-		accessKeyID:     "exampleaccesskeyid",
-		secretAccessKey: "examplesecretaccesskey",
-		bucket:          "examplebucket",
-		s3prefix:        "exampleprefix",
-		region:          "exampleregion",
-		compress:        "",
-		endpoint:        "",
+		accessKeyID:      "exampleaccesskeyid",
+		secretAccessKey:  "examplesecretaccesskey",
+		bucket:           "examplebucket",
+		s3prefix:         "exampleprefix",
+		region:           "exampleregion",
+		compress:         "",
+		endpoint:         "",
+		autoCreateBucket: "false",
 	}
 	res := FLBPluginInit(unsafe.Pointer(&plugin))
 	assert.Equal(t, output.FLB_OK, res)
@@ -262,17 +266,18 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 
 func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
 	plugin = &testFluentPlugin{
-		credential: "examplecredentials",
-		bucket:     "examplebucket",
-		s3prefix:   "exampleprefix",
-		region:     "exampleregion",
-		compress:   "",
-		endpoint:   "",
+		credential:       "examplecredentials",
+		bucket:           "examplebucket",
+		s3prefix:         "exampleprefix",
+		region:           "exampleregion",
+		compress:         "",
+		endpoint:         "",
+		autoCreateBucket: "false",
 	}
 	res := FLBPluginInit(unsafe.Pointer(&plugin))
 	assert.Equal(t, output.FLB_OK, res)
@@ -280,13 +285,14 @@ func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 
 func TestPluginFlusher(t *testing.T) {
 	testplugin := &testFluentPlugin{
-		credential:      "examplecredentials",
-		accessKeyID:     "exampleaccesskeyid",
-		secretAccessKey: "examplesecretaccesskey",
-		bucket:          "examplebucket",
-		s3prefix:        "exampleprefix",
-		compress:        "",
-		endpoint:        "",
+		credential:       "examplecredentials",
+		accessKeyID:      "exampleaccesskeyid",
+		secretAccessKey:  "examplesecretaccesskey",
+		bucket:           "examplebucket",
+		s3prefix:         "exampleprefix",
+		compress:         "",
+		endpoint:         "",
+		autoCreateBucket: "false",
 	}
 	ts := time.Date(2019, time.March, 10, 10, 11, 12, 0, time.UTC)
 	testrecords := map[interface{}]interface{}{

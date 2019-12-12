@@ -3,7 +3,9 @@ package main
 import "github.com/fluent/fluent-bit-go/output"
 import "github.com/json-iterator/go"
 import "github.com/aws/aws-sdk-go/aws"
+import "github.com/aws/aws-sdk-go/aws/awserr"
 import "github.com/aws/aws-sdk-go/aws/session"
+import "github.com/aws/aws-sdk-go/service/s3"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
 import "github.com/prometheus/common/version"
 
@@ -22,7 +24,7 @@ import (
 
 var plugin GoOutputPlugin = &fluentPlugin{}
 
-type s3 struct {
+type s3operator struct {
 	bucket         string
 	prefix         string
 	uploader       *s3manager.Uploader
@@ -34,7 +36,7 @@ type GoOutputPlugin interface {
 	Unregister(ctx unsafe.Pointer)
 	GetRecord(dec *output.FLBDecoder) (ret int, ts interface{}, rec map[interface{}]interface{})
 	NewDecoder(data unsafe.Pointer, length int) *output.FLBDecoder
-	Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error
+	Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error
 	Exit(code int)
 }
 
@@ -60,7 +62,7 @@ func (p *fluentPlugin) Exit(code int) {
 	os.Exit(code)
 }
 
-func (p *fluentPlugin) Put(s3operator *s3, objectKey string, timestamp time.Time, line string) error {
+func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error {
 	switch s3operator.compressFormat {
 	case plainTextFormat:
 		_, err := s3operator.uploader.Upload(&s3manager.UploadInput{
@@ -109,10 +111,44 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 }
 
 var (
-	s3operators []*s3
+	s3operators []*s3operator
 )
 
-func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
+func ensureBucket(session *session.Session, bucket, region *string) (bool, error) {
+	svc := s3.New(session)
+	var input *s3.CreateBucketInput
+	if *region == "us-east-1" {
+		input = &s3.CreateBucketInput{
+			Bucket: bucket,
+		}
+	} else {
+		input = &s3.CreateBucketInput{
+			Bucket: bucket,
+			CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+				LocationConstraint: region,
+			},
+		}
+	}
+
+	_, err := svc.CreateBucket(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeBucketAlreadyExists:
+				return true, nil
+			case s3.ErrCodeBucketAlreadyOwnedByYou:
+				return true, nil
+			default:
+				return false, aerr
+			}
+		} else {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	// Example to retrieve an optional configuration parameter
 	credential := plugin.PluginConfigKey(ctx, "Credential")
 	accessKeyID := plugin.PluginConfigKey(ctx, "AccessKeyID")
@@ -122,8 +158,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 	region := plugin.PluginConfigKey(ctx, "Region")
 	compress := plugin.PluginConfigKey(ctx, "Compress")
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
+	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +173,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 	fmt.Printf("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
 	fmt.Printf("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
 	fmt.Printf("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
+	fmt.Printf("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -147,12 +185,17 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3, error) {
 
 	sess := session.New(&cfg)
 
+	if config.autoCreateBucket == true {
+		_, err = ensureBucket(sess, config.bucket, config.region)
+		return nil, err
+	}
+
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024
 		u.LeavePartsOnError = true
 	})
 
-	s3operator := &s3{
+	s3operator := &s3operator{
 		bucket:         *config.bucket,
 		prefix:         *config.s3prefix,
 		uploader:       uploader,
@@ -177,7 +220,7 @@ func addS3Output(ctx unsafe.Pointer) error {
 	return nil
 }
 
-func getS3Operator(ctx unsafe.Pointer) *s3 {
+func getS3Operator(ctx unsafe.Pointer) *s3operator {
 	operatorID := output.FLBPluginGetContext(ctx).(int)
 	return s3operators[operatorID]
 }
@@ -240,7 +283,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 }
 
 // format is S3_PREFIX/S3_TRAILING_PREFIX/date/hour/timestamp_uuid.log
-func GenerateObjectKey(s3operator *s3, t time.Time) string {
+func GenerateObjectKey(s3operator *s3operator, t time.Time) string {
 	var fileext string
 	switch s3operator.compressFormat {
 	case plainTextFormat:

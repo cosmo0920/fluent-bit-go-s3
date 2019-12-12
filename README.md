@@ -58,16 +58,17 @@ $ make
 
 ### Configuration Options
 
-| Key             | Description                   | Default value | Note                            |
-|-----------------|-------------------------------|---------------|---------------------------------|
-| Credential      | URI of AWS shared credential  | `""`          |(See [Credentials](#credentials))|
-| AccessKeyID     | Access key ID of AWS          | `""`          |(See [Credentials](#credentials))|
-| SecretAccessKey | Secret access key ID of AWS   | `""`          |(See [Credentials](#credentials))|
-| Bucket          | Bucket name of S3 storage     | `-`           | Mandatory parameter             |
-| S3Prefix        | S3Prefix of S3 key            | `-`           | Mandatory parameter             |
-| Region          | Region of S3                  | `-`           | Mandatory parameter             |
-| Compress        | Choose Compress method        | `""`          | gzip or plainText(`""`)         |
-| Endpoint        | Specify the endpoint URL      | `""`          | URL with port or empty string   |
+| Key              | Description                   | Default value | Note                            |
+|------------------|-------------------------------|---------------|---------------------------------|
+| Credential       | URI of AWS shared credential  | `""`          |(See [Credentials](#credentials))|
+| AccessKeyID      | Access key ID of AWS          | `""`          |(See [Credentials](#credentials))|
+| SecretAccessKey  | Secret access key ID of AWS   | `""`          |(See [Credentials](#credentials))|
+| Bucket           | Bucket name of S3 storage     | `-`           | Mandatory parameter             |
+| S3Prefix         | S3Prefix of S3 key            | `-`           | Mandatory parameter             |
+| Region           | Region of S3                  | `-`           | Mandatory parameter             |
+| Compress         | Choose Compress method        | `""`          | gzip or plainText(`""`)         |
+| Endpoint         | Specify the endpoint URL      | `""`          | URL with port or empty string   |
+| AutoCreateBucket | Create bucket automatically   | `false`       | true/false                      |
 
 Example:
 

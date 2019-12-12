@@ -5,6 +5,7 @@ import "github.com/aws/aws-sdk-go/aws/credentials"
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -16,12 +17,13 @@ const (
 )
 
 type s3Config struct {
-	credentials *credentials.Credentials
-	bucket      *string
-	s3prefix    *string
-	region      *string
-	compress    format
-	endpoint    string
+	credentials      *credentials.Credentials
+	bucket           *string
+	s3prefix         *string
+	region           *string
+	compress         format
+	endpoint         string
+	autoCreateBucket bool
 }
 
 type S3Credential interface {
@@ -60,7 +62,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, fmt.Errorf("Failed to create credentials")
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -95,6 +97,13 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 			return nil, fmt.Errorf("Endpoint is not supported for AWS S3. This parameter is intended for S3 compatible services. Use Region instead.")
 		}
 		conf.endpoint = endpoint
+	}
+
+	isAutoCreateBucket, err := strconv.ParseBool(autoCreateBucket)
+	if err != nil {
+		conf.autoCreateBucket = false
+	} else {
+		conf.autoCreateBucket = isAutoCreateBucket
 	}
 
 	return conf, nil
