@@ -3,7 +3,9 @@ package main
 import "github.com/fluent/fluent-bit-go/output"
 import "github.com/json-iterator/go"
 import "github.com/aws/aws-sdk-go/aws"
+import "github.com/aws/aws-sdk-go/aws/awserr"
 import "github.com/aws/aws-sdk-go/aws/session"
+import "github.com/aws/aws-sdk-go/service/s3"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
 import "github.com/prometheus/common/version"
 
@@ -112,6 +114,40 @@ var (
 	s3operators []*s3operator
 )
 
+func ensureBucket(session *session.Session, bucket, region *string) (bool, error) {
+	svc := s3.New(session)
+	var input *s3.CreateBucketInput
+	if *region == "us-east-1" {
+		input = &s3.CreateBucketInput{
+			Bucket: bucket,
+		}
+	} else {
+		input = &s3.CreateBucketInput{
+			Bucket: bucket,
+			CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+				LocationConstraint: region,
+			},
+		}
+	}
+
+	_, err := svc.CreateBucket(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeBucketAlreadyExists:
+				return true, nil
+			case s3.ErrCodeBucketAlreadyOwnedByYou:
+				return true, nil
+			default:
+				return false, aerr
+			}
+		} else {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
 func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	// Example to retrieve an optional configuration parameter
 	credential := plugin.PluginConfigKey(ctx, "Credential")
@@ -122,8 +158,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	region := plugin.PluginConfigKey(ctx, "Region")
 	compress := plugin.PluginConfigKey(ctx, "Compress")
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
+	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +173,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	fmt.Printf("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
 	fmt.Printf("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
 	fmt.Printf("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
+	fmt.Printf("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -146,6 +184,11 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	}
 
 	sess := session.New(&cfg)
+
+	if config.autoCreateBucket == true {
+		_, err = ensureBucket(sess, config.bucket, config.region)
+		return nil, err
+	}
 
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024
