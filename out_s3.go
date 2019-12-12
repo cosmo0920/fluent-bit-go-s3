@@ -187,7 +187,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 	if config.autoCreateBucket == true {
 		_, err = ensureBucket(sess, config.bucket, config.region)
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
