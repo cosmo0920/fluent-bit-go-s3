@@ -2,6 +2,7 @@ package main
 
 import "github.com/aws/aws-sdk-go/aws"
 import "github.com/aws/aws-sdk-go/aws/credentials"
+import log "github.com/sirupsen/logrus"
 
 import (
 	"fmt"
@@ -23,6 +24,7 @@ type s3Config struct {
 	region           *string
 	compress         format
 	endpoint         string
+	logLevel         log.Level
 	autoCreateBucket bool
 }
 
@@ -62,7 +64,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, fmt.Errorf("Failed to create credentials")
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -105,6 +107,15 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 	} else {
 		conf.autoCreateBucket = isAutoCreateBucket
 	}
+
+	if logLevel == "" {
+		logLevel = "info"
+	}
+	var level log.Level
+	if level, err = log.ParseLevel(logLevel); err != nil {
+		return nil, fmt.Errorf("invalid log level: %v", logLevel)
+	}
+	conf.logLevel = level
 
 	return conf, nil
 }

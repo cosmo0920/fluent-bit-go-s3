@@ -7,13 +7,13 @@ import "github.com/aws/aws-sdk-go/aws/awserr"
 import "github.com/aws/aws-sdk-go/aws/session"
 import "github.com/aws/aws-sdk-go/service/s3"
 import "github.com/aws/aws-sdk-go/service/s3/s3manager"
+import log "github.com/sirupsen/logrus"
 import "github.com/prometheus/common/version"
 
 import (
 	"C"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,6 +23,12 @@ import (
 )
 
 var plugin GoOutputPlugin = &fluentPlugin{}
+var logger *log.Logger
+
+func init() {
+	logLevel, _ := log.ParseLevel("info")
+	logger = newLogger(logLevel)
+}
 
 type s3operator struct {
 	bucket         string
@@ -130,15 +136,19 @@ func ensureBucket(session *session.Session, bucket, region *string) (bool, error
 		}
 	}
 
-	_, err := svc.CreateBucket(input)
+	result, err := svc.CreateBucket(input)
+	logger.Tracef("CreateBucket request result is: %s, err: %s", result, err)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeBucketAlreadyExists:
+				logger.Tracef("Bucket(%s) is already exists.", *bucket)
 				return true, nil
 			case s3.ErrCodeBucketAlreadyOwnedByYou:
+				logger.Tracef("Bucket(%s) is already owned by you.", *bucket)
 				return true, nil
 			default:
+				logger.Tracef("CreateBucket is failed with: %s", aerr.Error())
 				return false, aerr
 			}
 		} else {
@@ -146,6 +156,12 @@ func ensureBucket(session *session.Session, bucket, region *string) (bool, error
 		}
 	}
 	return true, nil
+}
+
+func newLogger(logLevel log.Level) *log.Logger {
+	logger := log.New()
+	logger.Level = logLevel
+	return logger
 }
 
 func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
@@ -159,21 +175,24 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	compress := plugin.PluginConfigKey(ctx, "Compress")
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
 	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
+	logLevel := plugin.PluginConfigKey(ctx, "LogLevel")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("[flb-go %d] Starting fluent-bit-go-s3: %s\n", operatorID, version.Info())
-	fmt.Printf("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
-	fmt.Printf("[flb-go %d] plugin accessKeyID parameter = '%s'\n", operatorID, accessKeyID)
-	fmt.Printf("[flb-go %d] plugin secretAccessKey parameter = '%s'\n", operatorID, secretAccessKey)
-	fmt.Printf("[flb-go %d] plugin bucket parameter = '%s'\n", operatorID, bucket)
-	fmt.Printf("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
-	fmt.Printf("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
-	fmt.Printf("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
-	fmt.Printf("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
-	fmt.Printf("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
+	logger = newLogger(config.logLevel)
+
+	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v\n", operatorID, version.Info())
+	logger.Infof("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
+	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'\n", operatorID, accessKeyID)
+	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'\n", operatorID, secretAccessKey)
+	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'\n", operatorID, bucket)
+	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
+	logger.Infof("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
+	logger.Infof("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
+	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
+	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -210,7 +229,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 func addS3Output(ctx unsafe.Pointer) error {
 	operatorID := len(s3operators)
-	fmt.Printf("[s3operator] id = %q\n", operatorID)
+	logger.Infof("[s3operator] id = %d\n", operatorID)
 	// Set the context to point to any Go variable
 	output.FLBPluginSetContext(ctx, operatorID)
 	operator, err := newS3Output(ctx, operatorID)
@@ -263,7 +282,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 		line, err := createJSON(record)
 		if err != nil {
-			fmt.Printf("error creating message for S3: %v\n", err)
+			logger.Warnf("error creating message for S3: %v\n", err)
 			continue
 		}
 		lines += line + "\n"
@@ -272,7 +291,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
 	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
-		fmt.Printf("error sending message for S3: %v\n", err)
+		logger.Warnf("error sending message for S3: %v\n", err)
 		return output.FLB_RETRY
 	}
 
