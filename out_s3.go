@@ -124,6 +124,7 @@ var (
 func ensureBucket(session *session.Session, bucket, region *string) (bool, error) {
 	svc := s3.New(session)
 	var input *s3.CreateBucketInput
+	// us-east-1 is default region. So, it needn't specify region in CreateBucketInput.
 	if *region == "us-east-1" {
 		input = &s3.CreateBucketInput{
 			Bucket: bucket,
