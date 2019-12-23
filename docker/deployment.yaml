@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluent-bit-go-s3
+  namespace: log
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fluent-bit-go-s3
+      version: v0.5.0
+  template:
+    metadata:
+      labels:
+        app: fluent-bit-go-s3
+        version: v0.5.0
+    spec:
+      containers:
+      - image: cosmo0920/fluent-bit-go-s3:v0.5.0
+        name: fluent-bit-go-s3
+        ports:
+        - containerPort: 24224
+        volumeMounts:
+        - name: config-source
+          mountPath: /fluent-bit/etc/
+      volumes:
+      - name: config-source
+        configMap:
+          name: fluent-bit-config
