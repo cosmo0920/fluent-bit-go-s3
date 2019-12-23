@@ -54,8 +54,8 @@ tolerations: []
 affinity: {}
 
 s3:
-  accessKeyID: AKIAYOURACCESSKEY
-  secretAccessKey: yoursecretaccesskey
+  accessKeyID: ""
+  secretAccessKey: ""
   bucket: fluent-bit-k8s
   s3prefix: fluent-bit
   region: us-east-1
