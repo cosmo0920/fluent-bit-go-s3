@@ -21,6 +21,8 @@ $ helm install --name my-release .
 
 The following table lists the configurable parameters of the Fluent-Bit chart and the default values.
 
+**NOTE**: You should use your AWS AccessKeyID and SecretAccessKey in `s3.accessKeyID` and `s3.secretAccessKey`.
+
 | Parameter               | Description                         | Default                 |
 | ----------------------- | ----------------------------------- | ----------------------- |
 | `s3.accessKeyID`        | Specify AWS AccessKeyID             |                         |
