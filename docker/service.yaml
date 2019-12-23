@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluent-git-go-s3
+  namespace: log
+spec:
+  type: LoadBalancer
+  ports:
+  - name: "forward-port"
+    port: 24224
+    protocol: TCP
+    targetPort: 24224
+  selector:
+    app: fluent-bit-go-s3
+    version: v0.5.0
