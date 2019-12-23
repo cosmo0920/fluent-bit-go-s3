@@ -1,0 +1,13 @@
+fluent-bit with fluent-bit-go-s3 is now running.
+
+Now sending fluent-bit events into AWS S3.
+  S3 bucket: {{ .Values.s3.bucket }}
+  S3prefix: {{ .Values.s3.s3prefix }}
+  region: {{ .Values.s3.region }}
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+        You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "charts.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "charts.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- end }}
