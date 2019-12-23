@@ -14,7 +14,7 @@ This chart will do the following:
 To install the chart with the release name `my-release`:
 
 ```bash
-$ helm install --name my-release .
+$ helm install my-release .
 ```
 
 ## Configuration
