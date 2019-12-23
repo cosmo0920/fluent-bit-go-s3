@@ -19,3 +19,13 @@ version: 0.1.0
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application.
 appVersion: 1.16.0
+
+sources:
+- https://fluentbit.io
+- https://github.com/cosmo0920/fluent-bit-go-s3
+
+keywords:
+- fluent
+- logging
+- aws
+- s3
