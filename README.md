@@ -45,6 +45,12 @@ $ docker pull cosmo0920/fluent-bit-go-s3:latest
 
 Other released images are available in [DockerHub's fluent-bit-go-s3 image tags](https://hub.docker.com/r/cosmo0920/fluent-bit-go-s3/tags).
 
+Or, using helm:
+
+```bash
+helm install [YOURRELEASENAME] ./helm/fluent-bit
+```
+
 # Prerequisites
 
 * Go 1.11+
