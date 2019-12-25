@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:105a96fda710a64f0388222f7c31cf2078e2f5f9b7783c08677b41744310c4f3"
+  digest = "1:4538fa77bf2ba9e4c1e2a4c00666093bd81f537cc72874267c19a93d2ee8c00f"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -48,8 +48,8 @@
     "service/sts/stsiface",
   ]
   pruneopts = "UT"
-  revision = "f421e2327a6e6566d937e4519317765f3cd0e856"
-  version = "v1.25.48"
+  revision = "fcbfc357f185c1d55e2c37626357ec92abd52286"
+  version = "v1.26.8"
 
 [[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
@@ -76,25 +76,6 @@
   revision = "ea13c021720c495c6747ee07bc5376afdd1ff900"
 
 [[projects]]
-  digest = "1:a54d9b22e14caae3254cfa3e86c814c720e334bc49b0e153a673a7137642598e"
-  name = "github.com/go-kit/kit"
-  packages = [
-    "log",
-    "log/level",
-  ]
-  pruneopts = "UT"
-  revision = "150a65a7ec6156b4b640c1fd55f26fd3d475d656"
-  version = "v0.9.0"
-
-[[projects]]
-  digest = "1:4062bc6de62d73e2be342243cf138cf499b34d558876db8d9430e2149388a4d8"
-  name = "github.com/go-logfmt/logfmt"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "07c9b44f60d7ffdfb7d8efe1ad539965737836dc"
-  version = "v0.4.0"
-
-[[projects]]
   digest = "1:573ca21d3669500ff845bdebee890eb7fc7f0f50c59f2132f2a0c6b03d85086a"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -110,12 +91,12 @@
   revision = "c2b33e84"
 
 [[projects]]
-  digest = "1:beb5b4f42a25056f0aa291b5eadd21e2f2903a05d15dfe7caf7eaee7e12fa972"
+  digest = "1:7cd2924a44ecf80a319cfa2378529fabd348d011b739fb4eccc565f65e3296c4"
   name = "github.com/json-iterator/go"
   packages = ["."]
   pruneopts = "UT"
-  revision = "03217c3e97663914aec3faafde50d081f197a0a2"
-  version = "v1.1.8"
+  revision = "acfec88f7a0d5140ace3dcdbee10184e3684a9e1"
+  version = "v1.1.9"
 
 [[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
@@ -124,14 +105,6 @@
   pruneopts = "UT"
   revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
   version = "v1.0.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:a64e323dc06b73892e5bb5d040ced475c4645d456038333883f58934abbf6f72"
-  name = "github.com/kr/logfmt"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
 
 [[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
@@ -158,14 +131,6 @@
   version = "1.0.1"
 
 [[projects]]
-  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
-  version = "v0.8.1"
-
-[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -185,16 +150,16 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:982be0b5396e16a663697899ce69cc7b1e71ddcae4153af157578d4dc9bc3f88"
   name = "github.com/prometheus/client_model"
   packages = ["go"]
   pruneopts = "UT"
   revision = "d1d2010b5beead3fa1c5f271a5cf626e40b3ad6e"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:7dec9ab2db741c280b89b142b08ea142824152c5f40fb1f90c35b6ef7a694456"
+  digest = "1:ba75229a1404913593f067be36b8ad916148bdd2b14592d9e40bd5f770d46ae4"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -203,7 +168,7 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "b5fe7d854c42dc7842e48d1ca58f60feae09d77b"
+  revision = "7680068d4af7bd5cb3043381494f956c22c034b2"
 
 [[projects]]
   digest = "1:ec0ff4bd619a67065e34d6477711ed0117e335f99059a4c508e0fe21cfe7b304"
@@ -243,30 +208,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0cc11cd6954a646d5ff24f6ec4f3b1aa13a32273ecf358e637fd05bcb42bc67f"
-  name = "github.com/weaveworks/common"
-  packages = ["logging"]
-  pruneopts = "UT"
-  revision = "02b9c3fc5b90b294b61e167321cfbc64c5d57b9a"
-
-[[projects]]
-  digest = "1:bb40f7ff970145324f2a2acafdff3a23ed3f05db49cb5eb519b3d6bee86a5887"
-  name = "github.com/weaveworks/promrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "0599d764e054d4e983bb120e30759179fafe3942"
-  version = "v1.2.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:8191c209ac2aaba9e958a061256fab8955ad10cc731aa609660184800f1ef55a"
+  digest = "1:33a7c341af0f0358f9ac03d9d12d6990b9a8dc1641e1845fea2e6810fd0572af"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "eeba5f6aabab6d6594a9191d6bfeaca5fa6a8248"
+  revision = "c709ea063b76879dc9915358f55d4d77c16ab6d5"
 
 [[projects]]
   digest = "1:b75b3deb2bce8bc079e16bb2aecfe01eb80098f5650f9e93e5643ca8b7b73737"
@@ -291,7 +240,6 @@
     "github.com/prometheus/common/version",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
-    "github.com/weaveworks/common/logging",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
