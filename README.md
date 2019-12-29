@@ -55,6 +55,7 @@ helm install [YOURRELEASENAME] ./helm/fluent-bit
 
 * Go 1.11+
 * gcc (for cgo)
+* make
 
 ## Building
 
