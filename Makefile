@@ -17,7 +17,7 @@ GO_FLAGS := -ldflags "-X $(VPREFIX).Branch=$(GIT_BRANCH) -X $(VPREFIX).Version=$
 
 all: test build
 build:
-	go build $(GO_FLAGS) -buildmode=c-shared -o out_s3.so .
+	go build $(GO_FLAGS) -buildmode=c-shared -o out_s3$(DLLEXT) .
 
 fast:
 	go build out_s3.go s3.go
@@ -29,4 +29,4 @@ dep:
 	dep ensure
 
 clean:
-	rm -rf *.so *.h
+	rm -rf *$(DLLEXT) *.h
