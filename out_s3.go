@@ -36,6 +36,7 @@ type s3operator struct {
 	uploader       *s3manager.Uploader
 	compressFormat format
 	logger         *log.Logger
+	location       *time.Location
 }
 
 type GoOutputPlugin interface {
@@ -178,8 +179,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
 	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
 	logLevel := plugin.PluginConfigKey(ctx, "LogLevel")
+	timeZone := plugin.PluginConfigKey(ctx, "TimeZone")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeZone)
 	if err != nil {
 		return nil, err
 	}
@@ -195,6 +197,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	logger.Infof("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
 	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
 	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
+	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'\n", operatorID, timeZone)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -224,6 +227,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 		uploader:       uploader,
 		compressFormat: config.compress,
 		logger:         logger,
+		location:       config.location,
 	}
 
 	return s3operator, nil
@@ -292,7 +296,13 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	}
 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
-	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
+	var now time.Time
+	if s3operator.location != nil {
+		now = time.Now().In(s3operator.location)
+	} else {
+		now = time.Now()
+	}
+	err := plugin.Put(s3operator, objectKey, now, lines)
 	if err != nil {
 		s3operator.logger.Warnf("error sending message for S3: %v\n", err)
 		return output.FLB_RETRY
