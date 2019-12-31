@@ -123,8 +123,11 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 		loc, err := time.LoadLocation(timeZone)
 		if err != nil {
 			return nil, fmt.Errorf("invalid timeZone: %v", err)
+		} else {
+			conf.location = loc
 		}
-		conf.location = loc
+	} else {
+		conf.location = time.Local
 	}
 
 	return conf, nil

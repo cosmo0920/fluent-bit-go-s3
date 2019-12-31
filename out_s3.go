@@ -16,7 +16,6 @@ import (
 	"compress/gzip"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -259,6 +258,7 @@ func getS3Operator(ctx unsafe.Pointer) *s3operator {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	err := addS3Output(ctx)
 	if err != nil {
+		logger.Infof("Error: %s\n", err)
 		plugin.Unregister(ctx)
 		plugin.Exit(1)
 		return output.FLB_ERROR
@@ -296,13 +296,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	}
 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
-	var now time.Time
-	if s3operator.location != nil {
-		now = time.Now().In(s3operator.location)
-	} else {
-		now = time.Now()
-	}
-	err := plugin.Put(s3operator, objectKey, now, lines)
+	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
 		s3operator.logger.Warnf("error sending message for S3: %v\n", err)
 		return output.FLB_RETRY
@@ -325,9 +319,11 @@ func GenerateObjectKey(s3operator *s3operator, t time.Time) string {
 	case gzipFormat:
 		fileext = ".log.gz"
 	}
-	timestamp := t.Format("20060102150405")
-	date := t.Format("20060102")
-	hour := strconv.Itoa(t.Hour())
+	// Convert time.Time object's Local with specified TimeZone's
+	time.Local = s3operator.location
+	timestamp := t.Local().Format("20060102150405")
+	date := t.Local().Format("20060102")
+	hour := t.Local().Format("15")
 
 	fileName := strings.Join([]string{timestamp, fileext}, "")
 
