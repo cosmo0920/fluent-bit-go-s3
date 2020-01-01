@@ -26,7 +26,7 @@ Or,
 $ docker build . -t fluent-bit/s3-plugin
 ```
 
-and then, specify Url parameter as environment variables:
+and then, specify configuration parameters as environment variables:
 
 ```bash
 $ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
