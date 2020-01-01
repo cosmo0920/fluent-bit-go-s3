@@ -77,6 +77,7 @@ $ make
 | Endpoint         | Specify the endpoint URL      | `""`          | URL with port or empty string   |
 | AutoCreateBucket | Create bucket automatically   | `false`       | true/false                      |
 | LogLevel         | Specify Log Level             | `"info"`      | trace/debug/info/warning/error/fatal/panic     |
+| TimeZone         | Specify TimeZone              | `""`          | Specify TZInfo based region. e.g.) Asia/Tokyo     |
 
 Example:
 
@@ -95,6 +96,7 @@ Add this section to fluent-bit.conf:
     Compress gzip
     # Endpoint parameter is mainly used for minio.
     # Endpoint http://localhost:9000
+    # TimeZone Asia/Tokyo
 ```
 
 fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
