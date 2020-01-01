@@ -16,7 +16,6 @@ import (
 	"compress/gzip"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -36,6 +35,7 @@ type s3operator struct {
 	uploader       *s3manager.Uploader
 	compressFormat format
 	logger         *log.Logger
+	location       *time.Location
 }
 
 type GoOutputPlugin interface {
@@ -178,8 +178,9 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
 	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
 	logLevel := plugin.PluginConfigKey(ctx, "LogLevel")
+	timeZone := plugin.PluginConfigKey(ctx, "TimeZone")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeZone)
 	if err != nil {
 		return nil, err
 	}
@@ -195,6 +196,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	logger.Infof("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
 	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
 	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
+	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'\n", operatorID, timeZone)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -224,6 +226,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 		uploader:       uploader,
 		compressFormat: config.compress,
 		logger:         logger,
+		location:       config.location,
 	}
 
 	return s3operator, nil
@@ -255,6 +258,7 @@ func getS3Operator(ctx unsafe.Pointer) *s3operator {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	err := addS3Output(ctx)
 	if err != nil {
+		logger.Infof("Error: %s\n", err)
 		plugin.Unregister(ctx)
 		plugin.Exit(1)
 		return output.FLB_ERROR
@@ -315,9 +319,11 @@ func GenerateObjectKey(s3operator *s3operator, t time.Time) string {
 	case gzipFormat:
 		fileext = ".log.gz"
 	}
-	timestamp := t.Format("20060102150405")
-	date := t.Format("20060102")
-	hour := strconv.Itoa(t.Hour())
+	// Convert time.Time object's Local with specified TimeZone's
+	time.Local = s3operator.location
+	timestamp := t.Local().Format("20060102150405")
+	date := t.Local().Format("20060102")
+	hour := t.Local().Format("15")
 
 	fileName := strings.Join([]string{timestamp, fileext}, "")
 

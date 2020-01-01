@@ -101,6 +101,51 @@ func TestGenerateObjectKey(t *testing.T) {
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
 
+func TestGenerateObjectKeyWithTokyoLocation(t *testing.T) {
+	now := time.Now()
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	s3mock := &s3operator{
+		bucket:         "s3examplebucket",
+		prefix:         "s3exampleprefix",
+		uploader:       nil,
+		compressFormat: plainTextFormat,
+		location:       loc,
+	}
+	objectKey := GenerateObjectKey(s3mock, now)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+func TestGenerateObjectKeyWithUSEastLocation(t *testing.T) {
+	now := time.Now()
+	loc, _ := time.LoadLocation("US/Eastern")
+	s3mock := &s3operator{
+		bucket:         "s3examplebucket",
+		prefix:         "s3exampleprefix",
+		uploader:       nil,
+		compressFormat: plainTextFormat,
+		location:       loc,
+	}
+	objectKey := GenerateObjectKey(s3mock, now)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+func TestGenerateObjectKeyWithUTCLocation(t *testing.T) {
+	now := time.Now()
+	loc, _ := time.LoadLocation("UTC")
+	s3mock := &s3operator{
+		bucket:         "s3examplebucket",
+		prefix:         "s3exampleprefix",
+		uploader:       nil,
+		compressFormat: plainTextFormat,
+		location:       loc,
+	}
+	objectKey := GenerateObjectKey(s3mock, now)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
 func TestGenerateObjectKeyWithGzip(t *testing.T) {
 	now := time.Now()
 	s3mock := &s3operator{
@@ -163,6 +208,7 @@ type testFluentPlugin struct {
 	endpoint         string
 	autoCreateBucket string
 	logLevel         string
+	location         string
 	records          []testrecord
 	position         int
 	events           []*events
@@ -190,6 +236,8 @@ func (p *testFluentPlugin) PluginConfigKey(ctx unsafe.Pointer, key string) strin
 		return p.autoCreateBucket
 	case "LogLevel":
 		return p.logLevel
+	case "TimeZone":
+		return p.location
 	}
 	return "unknown-" + key
 }
@@ -249,7 +297,7 @@ func (c *testS3Credential) GetCredentials(accessID, secretkey, credential string
 
 func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info")
+	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -270,7 +318,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 
 func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
