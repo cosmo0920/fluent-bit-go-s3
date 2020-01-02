@@ -58,3 +58,4 @@ data:
         Compress  {{ .Values.s3.compress }}
         AutoCreateBucket  {{ .Values.s3.autoCreateBucket }}
         LogLevel  {{ .Values.s3.logLevel }}
+        TimeZone  {{ .Values.s3.timeZone }}

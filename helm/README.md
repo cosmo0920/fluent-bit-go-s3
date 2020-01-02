@@ -33,5 +33,6 @@ The following table lists the configurable parameters of the Fluent-Bit chart an
 | `s3.compress`           | Whether compress with gzip or not   | `gzip`                  |
 | `s3.autoCreateBucket`   | Whether auto creating bucket or not | `true`                  |
 | `s3.logLevel`           | Specify logLevel                    | `info`                  |
+| `s3.timeZone`           | Specify TimeZone                    | `Asia/Tokyo`            |
 
 > **Tip**: You can use the default [values.yaml](values.yaml)

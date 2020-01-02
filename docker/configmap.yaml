@@ -59,3 +59,4 @@ data:
         Compress gzip
         AutoCreateBucket true
         LogLevel info
+        TimeZone Asia/Tokyo
