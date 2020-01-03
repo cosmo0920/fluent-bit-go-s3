@@ -62,3 +62,4 @@ s3:
   compress: gzip
   autoCreateBucket: true
   logLevel: info
+  timeZone: "Asia/Tokyo"
