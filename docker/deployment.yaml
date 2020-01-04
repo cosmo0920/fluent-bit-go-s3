@@ -9,15 +9,15 @@ spec:
   selector:
     matchLabels:
       app: fluent-bit-go-s3
-      version: v0.5.0
+      version: v0.6.0
   template:
     metadata:
       labels:
         app: fluent-bit-go-s3
-        version: v0.5.0
+        version: v0.6.0
     spec:
       containers:
-      - image: cosmo0920/fluent-bit-go-s3:v0.5.0
+      - image: cosmo0920/fluent-bit-go-s3:v0.6.0
         name: fluent-bit-go-s3
         ports:
         - containerPort: 24224
