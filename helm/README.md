@@ -35,4 +35,4 @@ The following table lists the configurable parameters of the Fluent-Bit chart an
 | `s3.logLevel`           | Specify logLevel                    | `info`                  |
 | `s3.timeZone`           | Specify TimeZone                    | `Asia/Tokyo`            |
 
-> **Tip**: You can use the default [values.yaml](values.yaml)
+> **Tip**: You can use the default [values.yaml](https://github.com/cosmo0920/fluent-bit-go-s3/blob/master/helm/fluent-bit/values.yaml)
