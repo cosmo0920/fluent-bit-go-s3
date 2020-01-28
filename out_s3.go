@@ -188,8 +188,8 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v", operatorID, version.Info())
 	logger.Infof("[flb-go %d] plugin credential parameter = '%s'", operatorID, credential)
-	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, obfuscateLog(accessKeyID))
-	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, obfuscateLog(secretAccessKey))
+	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, obfuscateSecret(accessKeyID))
+	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, obfuscateSecret(secretAccessKey))
 	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'", operatorID, bucket)
 	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'", operatorID, s3prefix)
 	logger.Infof("[flb-go %d] plugin region parameter = '%s'", operatorID, region)
@@ -367,7 +367,7 @@ func FLBPluginExit() int {
 	return output.FLB_OK
 }
 
-func obfuscateLog(message string) string {
+func obfuscateSecret(message string) string {
 	res := ""
 	msgLen := len(message)
 	if msgLen > 0 {
