@@ -186,17 +186,17 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	}
 	logger := newLogger(config.logLevel)
 
-	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v\n", operatorID, version.Info())
-	logger.Infof("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
-	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'\n", operatorID, accessKeyID)
-	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'\n", operatorID, secretAccessKey)
-	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'\n", operatorID, bucket)
-	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
-	logger.Infof("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
-	logger.Infof("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
-	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
-	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
-	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'\n", operatorID, timeZone)
+	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v", operatorID, version.Info())
+	logger.Infof("[flb-go %d] plugin credential parameter = '%s'", operatorID, credential)
+	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, accessKeyID[:2] + "..." +  accessKeyID[len(accessKeyID)-2:])
+	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, secretAccessKey[:2] + "..." +  secretAccessKey[len(secretAccessKey)-2:])
+	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'", operatorID, bucket)
+	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'", operatorID, s3prefix)
+	logger.Infof("[flb-go %d] plugin region parameter = '%s'", operatorID, region)
+	logger.Infof("[flb-go %d] plugin compress parameter = '%s'", operatorID, compress)
+	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'", operatorID, endpoint)
+	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'", operatorID, autoCreateBucket)
+	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'", operatorID, timeZone)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
