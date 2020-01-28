@@ -235,7 +235,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 func addS3Output(ctx unsafe.Pointer) error {
 	operatorID := len(s3operators)
-	logger.Infof("[s3operator] id = %d\n", operatorID)
+	logger.Infof("[s3operator] id = %d", operatorID)
 	// Set the context to point to any Go variable
 	output.FLBPluginSetContext(ctx, operatorID)
 	operator, err := newS3Output(ctx, operatorID)
@@ -258,7 +258,7 @@ func getS3Operator(ctx unsafe.Pointer) *s3operator {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	err := addS3Output(ctx)
 	if err != nil {
-		logger.Infof("Error: %s\n", err)
+		logger.Infof("Error: %s", err)
 		plugin.Unregister(ctx)
 		plugin.Exit(1)
 		return output.FLB_ERROR
@@ -289,7 +289,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 		line, err := createJSON(record)
 		if err != nil {
-			s3operator.logger.Warnf("error creating message for S3: %v\n", err)
+			s3operator.logger.Warnf("error creating message for S3: %v", err)
 			continue
 		}
 		lines += line + "\n"
@@ -298,7 +298,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
 	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
-		s3operator.logger.Warnf("error sending message for S3: %v\n", err)
+		s3operator.logger.Warnf("error sending message for S3: %v", err)
 		return output.FLB_RETRY
 	}
 
