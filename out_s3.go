@@ -370,10 +370,10 @@ func FLBPluginExit() int {
 func obfuscateLog(message string) string {
 	res := ""
 	msgLen := len(message)
-	if message != "" {
+	if msgLen > 0 {
 		if msgLen >= 3 {
 			res = message[:1] + "..." + message[msgLen-1:]
-		} else if msgLen < 3 && msgLen > 0 {
+		} else if msgLen < 3 {
 			res = message[:1] + "..."
 		}
 	}
