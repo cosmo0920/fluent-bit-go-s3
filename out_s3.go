@@ -188,8 +188,8 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v", operatorID, version.Info())
 	logger.Infof("[flb-go %d] plugin credential parameter = '%s'", operatorID, credential)
-	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, accessKeyID[:2] + "..." +  accessKeyID[len(accessKeyID)-2:])
-	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, secretAccessKey[:2] + "..." +  secretAccessKey[len(secretAccessKey)-2:])
+	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, obfuscateLog(accessKeyID))
+	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, obfuscateLog(secretAccessKey))
 	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'", operatorID, bucket)
 	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'", operatorID, s3prefix)
 	logger.Infof("[flb-go %d] plugin region parameter = '%s'", operatorID, region)
@@ -365,6 +365,20 @@ func createJSON(record map[interface{}]interface{}) (string, error) {
 //export FLBPluginExit
 func FLBPluginExit() int {
 	return output.FLB_OK
+}
+
+func obfuscateLog(message string) string {
+	res := ""
+	msgLen := len(message)
+	if message != "" {
+		if msgLen >= 3 {
+			res = message[:1] + "..." + message[msgLen-1:]
+		} else if msgLen < 3 && msgLen > 0 {
+			res = message[:1] + "..."
+		}
+	}
+
+	return res
 }
 
 func main() {
