@@ -8,7 +8,7 @@ environment:
   matrix:
     - GOPATH: c:\gopath
       PATH: C:\msys64\mingw64\bin\;%PATH%
-      PLATFORM: x64
+      PLATFORM: win64
       GOARCH: amd64
       GOROOT: c:\go
     - GOPATH: c:\gopath
