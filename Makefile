@@ -6,7 +6,7 @@ else
     TEST_OPTS := -cover -race -coverprofile=coverage.txt -covermode=atomic
 endif
 
-VERSION := 0.6.0
+VERSION := 0.6.1
 
 # Version info for binaries
 GIT_REVISION := $(shell git rev-parse --short HEAD)
