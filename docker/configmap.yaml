@@ -6,7 +6,7 @@ metadata:
   namespace: log
   labels:
     app: fluent-bit-go-s3
-    version: v0.6.0
+    version: v0.6.1
 data:
   fluent-bit-s3.conf: |
     [SERVICE]
