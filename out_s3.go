@@ -186,17 +186,17 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	}
 	logger := newLogger(config.logLevel)
 
-	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v\n", operatorID, version.Info())
-	logger.Infof("[flb-go %d] plugin credential parameter = '%s'\n", operatorID, credential)
-	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'\n", operatorID, accessKeyID)
-	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'\n", operatorID, secretAccessKey)
-	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'\n", operatorID, bucket)
-	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'\n", operatorID, s3prefix)
-	logger.Infof("[flb-go %d] plugin region parameter = '%s'\n", operatorID, region)
-	logger.Infof("[flb-go %d] plugin compress parameter = '%s'\n", operatorID, compress)
-	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'\n", operatorID, endpoint)
-	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'\n", operatorID, autoCreateBucket)
-	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'\n", operatorID, timeZone)
+	logger.Infof("[flb-go %d] Starting fluent-bit-go-s3: %v", operatorID, version.Info())
+	logger.Infof("[flb-go %d] plugin credential parameter = '%s'", operatorID, credential)
+	logger.Infof("[flb-go %d] plugin accessKeyID parameter = '%s'", operatorID, obfuscateSecret(accessKeyID))
+	logger.Infof("[flb-go %d] plugin secretAccessKey parameter = '%s'", operatorID, obfuscateSecret(secretAccessKey))
+	logger.Infof("[flb-go %d] plugin bucket parameter = '%s'", operatorID, bucket)
+	logger.Infof("[flb-go %d] plugin s3prefix parameter = '%s'", operatorID, s3prefix)
+	logger.Infof("[flb-go %d] plugin region parameter = '%s'", operatorID, region)
+	logger.Infof("[flb-go %d] plugin compress parameter = '%s'", operatorID, compress)
+	logger.Infof("[flb-go %d] plugin endpoint parameter = '%s'", operatorID, endpoint)
+	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'", operatorID, autoCreateBucket)
+	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'", operatorID, timeZone)
 
 	cfg := aws.Config{
 		Credentials: config.credentials,
@@ -235,7 +235,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 
 func addS3Output(ctx unsafe.Pointer) error {
 	operatorID := len(s3operators)
-	logger.Infof("[s3operator] id = %d\n", operatorID)
+	logger.Infof("[s3operator] id = %d", operatorID)
 	// Set the context to point to any Go variable
 	output.FLBPluginSetContext(ctx, operatorID)
 	operator, err := newS3Output(ctx, operatorID)
@@ -258,7 +258,7 @@ func getS3Operator(ctx unsafe.Pointer) *s3operator {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	err := addS3Output(ctx)
 	if err != nil {
-		logger.Infof("Error: %s\n", err)
+		logger.Infof("Error: %s", err)
 		plugin.Unregister(ctx)
 		plugin.Exit(1)
 		return output.FLB_ERROR
@@ -289,7 +289,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 		line, err := createJSON(record)
 		if err != nil {
-			s3operator.logger.Warnf("error creating message for S3: %v\n", err)
+			s3operator.logger.Warnf("error creating message for S3: %v", err)
 			continue
 		}
 		lines += line + "\n"
@@ -298,7 +298,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	objectKey := GenerateObjectKey(s3operator, time.Now())
 	err := plugin.Put(s3operator, objectKey, time.Now(), lines)
 	if err != nil {
-		s3operator.logger.Warnf("error sending message for S3: %v\n", err)
+		s3operator.logger.Warnf("error sending message for S3: %v", err)
 		return output.FLB_RETRY
 	}
 
@@ -365,6 +365,20 @@ func createJSON(record map[interface{}]interface{}) (string, error) {
 //export FLBPluginExit
 func FLBPluginExit() int {
 	return output.FLB_OK
+}
+
+func obfuscateSecret(message string) string {
+	res := ""
+	msgLen := len(message)
+	if msgLen > 0 {
+		if msgLen >= 3 {
+			res = message[:1] + "..." + message[msgLen-1:]
+		} else if msgLen < 3 {
+			res = message[:1] + "..."
+		}
+	}
+
+	return res
 }
 
 func main() {
