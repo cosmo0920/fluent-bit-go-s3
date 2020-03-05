@@ -1,4 +1,4 @@
-FROM golang:1.13.8-buster AS build-env
+FROM golang:1.14.0-buster AS build-env
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 ENV GOARCH=amd64
@@ -8,6 +8,8 @@ WORKDIR /go/src/github.com/cosmo0920/fluent-bit-go-s3
 RUN make build
 
 FROM fluent/fluent-bit:1.3.9
+LABEL Description="Fluent Bit Go S3" FluentBitVersion="1.3.9"
+
 MAINTAINER Hiroshi Hatake <cosmo0920.wp[at]gmail.com>
 COPY --from=build-env /go/src/github.com/cosmo0920/fluent-bit-go-s3/out_s3.so /usr/lib/x86_64-linux-gnu/
 COPY docker/fluent-bit-s3.conf \
