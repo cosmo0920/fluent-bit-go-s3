@@ -30,8 +30,9 @@
   version = "1.19.30"
 
 [[constraint]]
-  branch = "master"
+  branch = "mark-nocheckptr"
   name = "github.com/fluent/fluent-bit-go"
+  source = "github.com/cosmo0920/fluent-bit-go"
 
 [[constraint]]
   name = "github.com/json-iterator/go"
