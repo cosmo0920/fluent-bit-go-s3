@@ -64,11 +64,17 @@ func FLBPluginUnregister(def unsafe.Pointer) {
 
 func FLBPluginConfigKey(plugin unsafe.Pointer, key string) string {
 	_key := C.CString(key)
-	return C.GoString(C.output_get_property(_key, plugin))
+	value := C.GoString(C.output_get_property(_key, plugin))
+	C.free(unsafe.Pointer(_key))
+	return value
 }
 
 var contexts []interface{}
 
+// FLBPluginSetContext may set up potentially faulting address.
+// It would construct and use an invalid pointer,
+// so mark it as nocheckptr.
+//go:nocheckptr
 func FLBPluginSetContext(plugin unsafe.Pointer, ctx interface{}) {
 	i := len(contexts)
 	contexts = append(contexts, ctx)
