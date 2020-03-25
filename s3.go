@@ -1,6 +1,8 @@
 package main
 
-import "github.com/aws/aws-sdk-go/aws"
+import (
+	"github.com/aws/aws-sdk-go/aws"
+)
 import "github.com/aws/aws-sdk-go/aws/credentials"
 import log "github.com/sirupsen/logrus"
 
@@ -39,31 +41,22 @@ type s3PluginConfig struct{}
 var s3Creds S3Credential = &s3PluginConfig{}
 
 func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential string) (*credentials.Credentials, error) {
-	var creds *credentials.Credentials
 	if credential != "" {
-		creds = credentials.NewSharedCredentials(credential, "default")
+		creds := credentials.NewSharedCredentials(credential, "default")
 		if _, err := creds.Get(); err != nil {
-			fmt.Println("[SharedCredentials] ERROR:", err)
-		} else {
-			return creds, nil
+			return nil, fmt.Errorf("[SharedCredentials] ERROR: %s", err)
 		}
-	} else if !(accessKeyID == "" && secretKey == "") {
-		creds = credentials.NewStaticCredentials(accessKeyID, secretKey, "")
-		if _, err := creds.Get(); err != nil {
-			fmt.Println("[StaticCredentials] ERROR:", err)
-		} else {
-			return creds, nil
-		}
-	} else {
-		creds = credentials.NewEnvCredentials()
-		if _, err := creds.Get(); err != nil {
-			fmt.Println("[EnvCredentials] ERROR:", err)
-		} else {
-			return creds, nil
-		}
+		return creds, nil
 	}
+	if !(accessKeyID == "" && secretKey == "") {
+		creds := credentials.NewStaticCredentials(accessKeyID, secretKey, "")
+		if _, err := creds.Get(); err != nil {
+			return nil, fmt.Errorf("[StaticCredentials] ERROR: %s", err)
+		}
+		return creds, nil
 
-	return nil, fmt.Errorf("Failed to create credentials")
+	}
+	return nil, nil
 }
 
 func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeZone string) (*s3Config, error) {

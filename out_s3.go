@@ -198,15 +198,21 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'", operatorID, autoCreateBucket)
 	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'", operatorID, timeZone)
 
+
 	cfg := aws.Config{
-		Credentials: config.credentials,
 		Region:      config.region,
+	}
+	if config.credentials != nil {
+		cfg.WithCredentials(config.credentials)
 	}
 	if config.endpoint != "" {
 		cfg.WithEndpoint(config.endpoint).WithS3ForcePathStyle(true)
 	}
 
-	sess := session.New(&cfg)
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		Config: cfg,
+		SharedConfigState: session.SharedConfigEnable,
+	}))
 
 	if config.autoCreateBucket == true {
 		_, err = ensureBucket(sess, config.bucket, config.region)
