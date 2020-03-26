@@ -1,6 +1,8 @@
 package main
 
-import "github.com/aws/aws-sdk-go/aws"
+import (
+	"github.com/aws/aws-sdk-go/aws"
+)
 import "github.com/aws/aws-sdk-go/aws/credentials"
 import log "github.com/sirupsen/logrus"
 
@@ -26,6 +28,7 @@ type s3Config struct {
 	compress         format
 	endpoint         string
 	logLevel         log.Level
+	timeFormat       string
 	location         *time.Location
 	autoCreateBucket bool
 }
@@ -66,7 +69,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, fmt.Errorf("Failed to create credentials")
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeZone string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeFormat, timeZone string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -118,6 +121,12 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 		return nil, fmt.Errorf("invalid log level: %v", logLevel)
 	}
 	conf.logLevel = level
+
+	if timeFormat != "" {
+		conf.timeFormat = timeFormat
+	} else {
+		conf.timeFormat = "20060102/15"
+	}
 
 	if timeZone != "" {
 		loc, err := time.LoadLocation(timeZone)

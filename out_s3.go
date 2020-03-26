@@ -35,6 +35,7 @@ type s3operator struct {
 	uploader       *s3manager.Uploader
 	compressFormat format
 	logger         *log.Logger
+	timeFormat     string
 	location       *time.Location
 }
 
@@ -178,9 +179,10 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	endpoint := plugin.PluginConfigKey(ctx, "Endpoint")
 	autoCreateBucket := plugin.PluginConfigKey(ctx, "AutoCreateBucket")
 	logLevel := plugin.PluginConfigKey(ctx, "LogLevel")
+	timeFormat := plugin.PluginConfigKey(ctx, "TimeFormat")
 	timeZone := plugin.PluginConfigKey(ctx, "TimeZone")
 
-	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeZone)
+	config, err := getS3Config(accessKeyID, secretAccessKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeFormat, timeZone)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +228,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 		uploader:       uploader,
 		compressFormat: config.compress,
 		logger:         logger,
+		timeFormat:     config.timeFormat,
 		location:       config.location,
 	}
 
@@ -322,12 +325,10 @@ func GenerateObjectKey(s3operator *s3operator, t time.Time) string {
 	// Convert time.Time object's Local with specified TimeZone's
 	time.Local = s3operator.location
 	timestamp := t.Local().Format("20060102150405")
-	date := t.Local().Format("20060102")
-	hour := t.Local().Format("15")
 
 	fileName := strings.Join([]string{timestamp, fileext}, "")
 
-	objectKey := filepath.Join(s3operator.prefix, date, hour, fileName)
+	objectKey := filepath.Join(s3operator.prefix, t.Local().Format(s3operator.timeFormat), fileName)
 	return objectKey
 }
 
