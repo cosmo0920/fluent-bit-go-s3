@@ -73,6 +73,7 @@ func (p *fluentPlugin) Exit(code int) {
 func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp time.Time, line string) error {
 	switch s3operator.compressFormat {
 	case plainTextFormat:
+		s3operator.logger.Tracef("[s3operator] objectKey = %s, rows = %d, byte = %d", objectKey, len(strings.Split(line, "\n")), len(line))
 		_, err := s3operator.uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String(s3operator.bucket),
 			Key:    aws.String(objectKey),
@@ -81,6 +82,7 @@ func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp t
 		return err
 	case gzipFormat:
 		compressed, err := makeGzip([]byte(line))
+		s3operator.logger.Tracef("[s3operator] objectKey = %s, rows = %d, byte = %d", objectKey, len(strings.Split(line, "\n")), len(compressed))
 		if err != nil {
 			return err
 		}
