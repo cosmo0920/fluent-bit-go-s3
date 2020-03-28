@@ -20,10 +20,18 @@ const (
 	gzipFormat
 )
 
+type algorithm int
+
+const (
+	noSuffixAlgorithm algorithm = iota
+	sha256SuffixAlgorithm
+)
+
 type s3Config struct {
 	credentials      *credentials.Credentials
 	bucket           *string
 	s3prefix         *string
+	suffixAlgorithm  algorithm
 	region           *string
 	compress         format
 	endpoint         string
@@ -60,7 +68,7 @@ func (c *s3PluginConfig) GetCredentials(accessKeyID, secretKey, credential strin
 	return nil, nil
 }
 
-func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeFormat, timeZone string) (*s3Config, error) {
+func getS3Config(accessID, secretKey, credential, s3prefix, suffixAlgorithm, bucket, region, compress, endpoint, autoCreateBucket, logLevel, timeFormat, timeZone string) (*s3Config, error) {
 	conf := &s3Config{}
 	creds, err := s3Creds.GetCredentials(accessID, secretKey, credential)
 	if err != nil {
@@ -77,6 +85,13 @@ func getS3Config(accessID, secretKey, credential, s3prefix, bucket, region, comp
 		return nil, fmt.Errorf("Cannot specify empty string to s3prefix")
 	}
 	conf.s3prefix = aws.String(s3prefix)
+
+	switch suffixAlgorithm {
+	case "sha256":
+		conf.suffixAlgorithm = sha256SuffixAlgorithm
+	default:
+		conf.suffixAlgorithm = noSuffixAlgorithm
+	}
 
 	if region == "" {
 		return nil, fmt.Errorf("Cannot specify empty string to region")

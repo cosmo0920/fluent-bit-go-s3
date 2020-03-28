@@ -65,20 +65,21 @@ $ make
 
 ### Configuration Options
 
-| Key              | Description                       | Default value   | Note                                                                 |
-|------------------|-----------------------------------|-----------------|----------------------------------------------------------------------|
-| Credential       | URI of AWS shared credential      | `""`            | (See [Credentials](#credentials))                                    |
-| AccessKeyID      | Access key ID of AWS              | `""`            | (See [Credentials](#credentials))                                    |
-| SecretAccessKey  | Secret access key ID of AWS       | `""`            | (See [Credentials](#credentials))                                    |
-| Bucket           | Bucket name of S3 storage         | `-`             | Mandatory parameter                                                  |
-| S3Prefix         | S3Prefix of S3 key                | `-`             | Mandatory parameter                                                  |
-| Region           | Region of S3                      | `-`             | Mandatory parameter                                                  |
-| Compress         | Choose Compress method            | `""`            | gzip or plainText(`""`)                                              |
-| Endpoint         | Specify the endpoint URL          | `""`            | URL with port or empty string                                        |
-| AutoCreateBucket | Create bucket automatically       | `false`         | true/false                                                           |
-| LogLevel         | Specify Log Level                 | `"info"`        | trace/debug/info/warning/error/fatal/panic                           |
-| TimeFormat       | Time format to add to the S3 path | `"20060102/15"` | Specify in [Go's Time Format](https://golang.org/src/time/format.go) | 
-| TimeZone         | Specify TimeZone                  | `""`            | Specify TZInfo based region. e.g.) Asia/Tokyo                        |
+| Key              | Description                           | Default value   | Note                                                                 |
+|------------------|---------------------------------------|-----------------|----------------------------------------------------------------------|
+| Credential       | URI of AWS shared credential          | `""`            | (See [Credentials](#credentials))                                    |
+| AccessKeyID      | Access key ID of AWS                  | `""`            | (See [Credentials](#credentials))                                    |
+| SecretAccessKey  | Secret access key ID of AWS           | `""`            | (See [Credentials](#credentials))                                    |
+| Bucket           | Bucket name of S3 storage             | `-`             | Mandatory parameter                                                  |
+| S3Prefix         | S3Prefix of S3 key                    | `-`             | Mandatory parameter                                                  |
+| SuffixAlgorithm  | Algorithm for naming S3 object suffix | `""`            | sha256 or no suffix(`""`)                                            |
+| Region           | Region of S3                          | `-`             | Mandatory parameter                                                  |
+| Compress         | Choose Compress method                | `""`            | gzip or plainText(`""`)                                              |
+| Endpoint         | Specify the endpoint URL              | `""`            | URL with port or empty string                                        |
+| AutoCreateBucket | Create bucket automatically           | `false`         | true/false                                                           |
+| LogLevel         | Specify Log Level                     | `"info"`        | trace/debug/info/warning/error/fatal/panic                           |
+| TimeFormat       | Time format to add to the S3 path     | `"20060102/15"` | Specify in [Go's Time Format](https://golang.org/src/time/format.go) | 
+| TimeZone         | Specify TimeZone                      | `""`            | Specify TZInfo based region. e.g.) Asia/Tokyo                        |
 
 Example:
 
@@ -93,6 +94,7 @@ Add this section to fluent-bit.conf:
     SecretAccessKey yourawssecretaccesskey
     Bucket          yourbucketname
     S3Prefix yours3prefixname
+    SuffixAlgorithm sha256
     Region us-east-1
     Compress gzip
     # Endpoint parameter is mainly used for minio.
