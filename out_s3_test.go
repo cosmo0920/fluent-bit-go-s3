@@ -297,7 +297,7 @@ func (c *testS3Credential) GetCredentials(accessID, secretkey, credential string
 
 func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "")
+	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -318,7 +318,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 
 func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
