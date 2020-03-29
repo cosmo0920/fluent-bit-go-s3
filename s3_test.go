@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetS3ConfigStaticCredentials(t *testing.T) {
-	conf, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "", "", "", "")
+	conf, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "", "examplebucket", "exampleregion", "", "", "", "", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -23,7 +23,7 @@ func TestGetS3ConfigStaticCredentials(t *testing.T) {
 
 func TestGetS3ConfigSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "", "", "", "")
+	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "", "", "", "", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -38,7 +38,7 @@ func TestGetS3ConfigSharedCredentials(t *testing.T) {
 
 func TestGetS3ConfigCompression(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "", "", "", "", "")
+	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "", "", "", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -53,7 +53,7 @@ func TestGetS3ConfigCompression(t *testing.T) {
 
 func TestGetS3ConfigEndpoint(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "http://localhost:9000", "false", "", "", "")
+	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "http://localhost:9000", "false", "", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -69,7 +69,7 @@ func TestGetS3ConfigEndpoint(t *testing.T) {
 
 func TestGetS3ConfigInvalidEndpoint(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "https://your-bucketname.s3.amazonaws.com", "false", "", "", "")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "https://your-bucketname.s3.amazonaws.com", "false", "", "", "")
 	if err != nil {
 		expected := errors.New("Endpoint is not supported for AWS S3. This parameter is intended for S3 compatible services. Use Region instead.")
 		assert.Equal(t, expected, err)
@@ -78,7 +78,7 @@ func TestGetS3ConfigInvalidEndpoint(t *testing.T) {
 
 func TestGetS3ConfigTimeFormat(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "", "", "", "dt=2006-01-02", "Asia/Tokyo")
+	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "", "", "", "dt=2006-01-02", "Asia/Tokyo")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -96,7 +96,7 @@ func TestGetS3ConfigTimeFormat(t *testing.T) {
 
 func TestGetS3ConfigTimeZone(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "", "", "", "", "Asia/Tokyo")
+	conf, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "", "", "", "", "Asia/Tokyo")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -114,7 +114,7 @@ func TestGetS3ConfigTimeZone(t *testing.T) {
 
 func TestGetS3ConfigInvalidTimeZone(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "gzip", "", "", "", "", "Asia/Nonexistent")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "gzip", "", "", "", "", "Asia/Nonexistent")
 	if err != nil {
 		expected := errors.New("invalid timeZone: unknown time zone Asia/Nonexistent")
 		assert.Equal(t, expected, err)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 	"time"
 	"unsafe"
@@ -96,9 +97,40 @@ func TestGenerateObjectKey(t *testing.T) {
 		uploader:       nil,
 		compressFormat: plainTextFormat,
 	}
-	objectKey := GenerateObjectKey(s3mock, now)
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
+}
+
+func TestGenerateObjectKeyWithNoSuffixAlgorithm(t *testing.T) {
+	now := time.Now()
+	s3mock := &s3operator{
+		bucket:          "s3examplebucket",
+		prefix:          "s3exampleprefix",
+		suffixAlgorithm: noSuffixAlgorithm,
+		uploader:        nil,
+		compressFormat:  plainTextFormat,
+	}
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.False(t, strings.HasSuffix(objectKey, "-c675f9cd0e59479e5ccca3ea8a03beccd80f662f6a56662bfc9dd0b61d4f73c3.log"), "objectKey has no suffix")
+}
+
+func TestGenerateObjectKeyWithSha256SuffixAlgorithm(t *testing.T) {
+	now := time.Now()
+	s3mock := &s3operator{
+		bucket:          "s3examplebucket",
+		prefix:          "s3exampleprefix",
+		suffixAlgorithm: sha256SuffixAlgorithm,
+		uploader:        nil,
+		compressFormat:  plainTextFormat,
+	}
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
+	fmt.Printf("objectKey: %v\n", objectKey)
+	assert.True(t, strings.HasSuffix(objectKey, "-c675f9cd0e59479e5ccca3ea8a03beccd80f662f6a56662bfc9dd0b61d4f73c3.log"), "objectKey has sha256 suffix")
 }
 
 func TestGenerateObjectKeyWithTokyoLocation(t *testing.T) {
@@ -111,7 +143,8 @@ func TestGenerateObjectKeyWithTokyoLocation(t *testing.T) {
 		compressFormat: plainTextFormat,
 		location:       loc,
 	}
-	objectKey := GenerateObjectKey(s3mock, now)
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
@@ -126,7 +159,8 @@ func TestGenerateObjectKeyWithUSEastLocation(t *testing.T) {
 		compressFormat: plainTextFormat,
 		location:       loc,
 	}
-	objectKey := GenerateObjectKey(s3mock, now)
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
@@ -141,7 +175,8 @@ func TestGenerateObjectKeyWithUTCLocation(t *testing.T) {
 		compressFormat: plainTextFormat,
 		location:       loc,
 	}
-	objectKey := GenerateObjectKey(s3mock, now)
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
@@ -154,7 +189,8 @@ func TestGenerateObjectKeyWithGzip(t *testing.T) {
 		uploader:       nil,
 		compressFormat: gzipFormat,
 	}
-	objectKey := GenerateObjectKey(s3mock, now)
+	lines := "exampletext"
+	objectKey := GenerateObjectKey(s3mock, now, lines)
 	fmt.Printf("objectKey: %v\n", objectKey)
 	assert.NotNil(t, objectKey, "objectKey not to be nil")
 }
@@ -297,7 +333,7 @@ func (c *testS3Credential) GetCredentials(accessID, secretkey, credential string
 
 func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
+	_, err := getS3Config("exampleaccessID", "examplesecretkey", "", "exampleprefix", "", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
@@ -318,7 +354,7 @@ func TestPluginInitializationWithStaticCredentials(t *testing.T) {
 
 func TestPluginInitializationWithSharedCredentials(t *testing.T) {
 	s3Creds = &testS3Credential{}
-	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
+	_, err := getS3Config("", "", "examplecredentials", "exampleprefix", "", "examplebucket", "exampleregion", "", "", "false", "info", "", "")
 	if err != nil {
 		t.Fatalf("failed test %#v", err)
 	}
