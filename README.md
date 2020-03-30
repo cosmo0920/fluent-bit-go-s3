@@ -103,13 +103,13 @@ Add this section to fluent-bit.conf:
     # TimeZone Asia/Tokyo
 ```
 
-fluent-bit-go-s3 supports the following credentials. Users must specify one of them:
-
 ## Credentials
 
-Specifying credentials is **required**.
+By default AWS credentials are loaded from their usual providers.
+See [AWS CLI Configuration and Credential File Settings](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 
-This plugin supports the following credentials:
+If the default credentials are not desired, this plugin supports the following
+credential providers.
 
 ### Shared Credentials
 
@@ -135,10 +135,6 @@ Specify the following parameters in fluent-bit configuration:
 AccessKeyID     yourawsaccesskeyid
 SecretAccessKey yourawssecretaccesskey
 ```
-
-### Environment Credentials
-
-Specify `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` as environment variables.
 
 ## Useful links
 
