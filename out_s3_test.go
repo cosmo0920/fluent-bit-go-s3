@@ -299,6 +299,16 @@ func (p *testFluentPlugin) addrecord(rc int, ts interface{}, line map[interface{
 	p.records = append(p.records, testrecord{rc: rc, ts: ts, data: line})
 }
 
+type testPluginContext struct {}
+
+func (p *testPluginContext) PluginGetContext(ctx unsafe.Pointer) interface{} {
+	return 0
+}
+
+func (p *testPluginContext) PluginSetContext(plugin unsafe.Pointer, ctx interface{}) {
+	// Do nothing.
+}
+
 type stubProvider struct {
 	creds   credentials.Value
 	expired bool
@@ -391,6 +401,7 @@ func TestPluginFlusher(t *testing.T) {
 	testplugin.addrecord(0, uint64(ts.Unix()), testrecords)
 	testplugin.addrecord(0, 0, testrecords)
 	plugin = testplugin
+	context = &testPluginContext{}
 	res := FLBPluginFlushCtx(nil, nil, 0, nil)
 	assert.Equal(t, output.FLB_OK, res)
 	assert.Len(t, testplugin.events, 1) // event length should be 1.

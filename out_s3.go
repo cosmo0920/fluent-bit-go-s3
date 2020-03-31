@@ -28,6 +28,7 @@ import (
 
 var plugin GoOutputPlugin = &fluentPlugin{}
 var logger *log.Logger
+var context GoPluginContext = &pluginContext{}
 
 func init() {
 	logLevel, _ := log.ParseLevel("info")
@@ -101,6 +102,21 @@ func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp t
 	}
 
 	return nil
+}
+
+type pluginContext struct {}
+
+type GoPluginContext interface {
+	PluginGetContext(ctx unsafe.Pointer) interface{}
+	PluginSetContext(plugin unsafe.Pointer, ctx interface{})
+}
+
+func (p *pluginContext) PluginGetContext(ctx unsafe.Pointer) interface{} {
+	return output.FLBPluginGetContext(ctx)
+}
+
+func (p *pluginContext) PluginSetContext(plugin unsafe.Pointer, ctx interface{}) {
+	output.FLBPluginSetContext(plugin, ctx)
 }
 
 // based on https://text.baldanders.info/golang/gzip-operation/
@@ -258,7 +274,7 @@ func addS3Output(ctx unsafe.Pointer) error {
 	operatorID := len(s3operators)
 	logger.Infof("[s3operator] id = %d", operatorID)
 	// Set the context to point to any Go variable
-	output.FLBPluginSetContext(ctx, operatorID)
+	context.PluginSetContext(ctx, operatorID)
 	operator, err := newS3Output(ctx, operatorID)
 	if err != nil {
 		return err
@@ -269,7 +285,7 @@ func addS3Output(ctx unsafe.Pointer) error {
 }
 
 func getS3Operator(ctx unsafe.Pointer) *s3operator {
-	operatorID := output.FLBPluginGetContext(ctx).(int)
+	operatorID := context.PluginGetContext(ctx).(int)
 	return s3operators[operatorID]
 }
 
