@@ -71,13 +71,13 @@
   version = "v1.1.1"
 
 [[projects]]
-  branch = "mark-nocheckptr"
-  digest = "1:011d448139d6c711864ac105d84d3baf4a38ea655c0ab627d54268a9058d16d2"
+  branch = "pointer-semantics"
+  digest = "1:3b6bca9af983a870bace664db9ac3eb433475eb50d6a9fa6a3b1bacf1d874a25"
   name = "github.com/fluent/fluent-bit-go"
   packages = ["output"]
   pruneopts = "UT"
-  revision = "a04c9729cf542b7fb6e324b828f25c8b0902fd68"
-  source = "github.com/cosmo0920/fluent-bit-go"
+  revision = "85b83f24abbfd69fda1e0e414b32e82a08ddfa1c"
+  source = "github.com/l2dy/fluent-bit-go"
 
 [[projects]]
   digest = "1:573ca21d3669500ff845bdebee890eb7fc7f0f50c59f2132f2a0c6b03d85086a"
