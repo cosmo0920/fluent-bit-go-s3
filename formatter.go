@@ -1,8 +1,8 @@
 package main
 
 import (
-    "bytes"
-    "fmt"
+	"bytes"
+	"fmt"
 )
 import "github.com/sirupsen/logrus"
 
@@ -18,7 +18,7 @@ const (
 	ANSI_WHITE   = "\033[97m"
 )
 
-type fluentBitLogFormat struct {}
+type fluentBitLogFormat struct{}
 
 //Format Specify logging format.
 func (f *fluentBitLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
