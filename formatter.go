@@ -51,6 +51,9 @@ func (f *fluentBitLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
 	case logrus.DebugLevel:
 		header_title = "debug"
 		header_color = ANSI_YELLOW
+	case logrus.FatalLevel:
+		header_title = "fatal"
+		header_color = ANSI_MAGENTA
 	}
 
 	time := fmt.Sprintf("%s[%s%s%s]%s",
