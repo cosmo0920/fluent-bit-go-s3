@@ -252,6 +252,10 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 		}
 	}
 
+	if config.suffixAlgorithm == noSuffixAlgorithm {
+		logger.Warnf("[flb-go %d] Not using suffix algorithm will cause object key collision. Please consider to use `suffixAlgorithm sha256`.", operatorID)
+	}
+
 	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
 		u.PartSize = 5 * 1024 * 1024
 		u.LeavePartsOnError = true
