@@ -20,7 +20,7 @@ build:
 	go build $(GO_FLAGS) -buildmode=c-shared -o out_s3$(DLLEXT) .
 
 fast:
-	go build out_s3.go s3.go
+	go build out_s3.go s3.go formatter.go
 
 test:
 	go test $(TEST_OPTS)

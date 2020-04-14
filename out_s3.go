@@ -33,6 +33,7 @@ var context GoPluginContext = &pluginContext{}
 func init() {
 	logLevel, _ := log.ParseLevel("info")
 	logger = newLogger(logLevel)
+	logger.SetFormatter(new(fluentBitLogFormat))
 }
 
 type s3operator struct {
@@ -188,6 +189,7 @@ func ensureBucket(session *session.Session, bucket, region *string) (bool, error
 func newLogger(logLevel log.Level) *log.Logger {
 	logger := log.New()
 	logger.Level = logLevel
+	logger.SetFormatter(new(fluentBitLogFormat))
 	return logger
 }
 
