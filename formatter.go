@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
 )
 import "github.com/sirupsen/logrus"
+import "golang.org/x/crypto/ssh/terminal"
 
 const (
 	ANSI_RESET   = "\033[0m"
@@ -54,6 +56,12 @@ func (f *fluentBitLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
 	case logrus.FatalLevel:
 		header_title = "fatal"
 		header_color = ANSI_MAGENTA
+	}
+
+	if !terminal.IsTerminal(int(os.Stdout.Fd())) {
+		header_color = ""
+		bold_color = ""
+		reset_color = ""
 	}
 
 	time := fmt.Sprintf("%s[%s%s%s]%s",

@@ -212,6 +212,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:ad2bf20798504fbde0c5bdf5ee83d3354fb101d32c5b2267f811c1958b91b0ab"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  pruneopts = "UT"
+  revision = "056763e48d71961566155f089ac0f02f1dda9b5a"
+
+[[projects]]
+  branch = "master"
   digest = "1:33a7c341af0f0358f9ac03d9d12d6990b9a8dc1641e1845fea2e6810fd0572af"
   name = "golang.org/x/sys"
   packages = [
@@ -244,6 +252,7 @@
     "github.com/prometheus/common/version",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
+    "golang.org/x/crypto/ssh/terminal",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
