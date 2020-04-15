@@ -1,6 +1,6 @@
 # fluent-bit s3 output plugin
 
-[![Build Status](https://travis-ci.org/cosmo0920/fluent-bit-go-s3.svg?branch=master)](https://travis-ci.org/cosmo0920/fluent-bit-go-s3)
+[![Build Status](https://travis-ci.com/cosmo0920/fluent-bit-go-s3.svg?branch=master)](https://travis-ci.com/cosmo0920/fluent-bit-go-s3)
 [![Build status](https://ci.appveyor.com/api/projects/status/93vh3rocl4yxcmg6/branch/master?svg=true)](https://ci.appveyor.com/project/cosmo0920/fluent-bit-go-s3/branch/master)
 
 Windows binaries are available in [release pages](https://github.com/cosmo0920/fluent-bit-go-s3/releases).
