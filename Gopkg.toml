@@ -30,9 +30,8 @@
   version = "1.29.31"
 
 [[constraint]]
-  branch = "pointer-semantics"
+  branch = "master"
   name = "github.com/fluent/fluent-bit-go"
-  source = "github.com/l2dy/fluent-bit-go"
 
 [[constraint]]
   name = "github.com/json-iterator/go"

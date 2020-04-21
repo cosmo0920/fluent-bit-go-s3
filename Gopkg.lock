@@ -71,13 +71,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  branch = "pointer-semantics"
-  digest = "1:3b6bca9af983a870bace664db9ac3eb433475eb50d6a9fa6a3b1bacf1d874a25"
+  branch = "master"
+  digest = "1:9c555b51d48bd81bd23ccec36d3f30bba412326d4b050276d3398bef2452fe32"
   name = "github.com/fluent/fluent-bit-go"
   packages = ["output"]
   pruneopts = "UT"
-  revision = "85b83f24abbfd69fda1e0e414b32e82a08ddfa1c"
-  source = "github.com/l2dy/fluent-bit-go"
+  revision = "e125cab1796300900f5f496c413270b58002309f"
 
 [[projects]]
   digest = "1:573ca21d3669500ff845bdebee890eb7fc7f0f50c59f2132f2a0c6b03d85086a"
