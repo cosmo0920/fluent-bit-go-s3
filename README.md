@@ -34,6 +34,7 @@ $ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
                  -e="FLUENT_BIT_BUCKET_NAME=yourbucketname" \
                  -e="FLUENT_BIT_S3_PREFIX=yours3prefix" \
                  -e="FLUENT_BIT_REGION=awsregion" \
+                 -e "FLUENT_BIT_SUFFIX_ALGORITHM=algorithm" \
                  fluent-bit/s3-plugin
 ```
 
