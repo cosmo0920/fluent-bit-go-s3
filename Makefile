@@ -30,3 +30,9 @@ dep:
 
 clean:
 	rm -rf *$(DLLEXT) *.h
+
+build-image:
+	docker build . -t cosmo0920/fluent-bit-go-s3:v$(VERSION)
+
+publish-image:
+	docker push cosmo0920/fluent-bit-go-s3:v$(VERSION)
