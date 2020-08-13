@@ -1,4 +1,5 @@
 language: go
+dist: bionic
 
 os:
   - linux
@@ -16,6 +17,7 @@ matrix:
 go:
   - "1.12"
   - "1.13"
+  - "1.14"
   - tip
 
 script:
