@@ -299,7 +299,7 @@ func (p *testFluentPlugin) addrecord(rc int, ts interface{}, line map[interface{
 	p.records = append(p.records, testrecord{rc: rc, ts: ts, data: line})
 }
 
-type testPluginContext struct {}
+type testPluginContext struct{}
 
 func (p *testPluginContext) PluginGetContext(ctx unsafe.Pointer) interface{} {
 	return 0

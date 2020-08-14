@@ -105,7 +105,7 @@ func (p *fluentPlugin) Put(s3operator *s3operator, objectKey string, timestamp t
 	return nil
 }
 
-type pluginContext struct {}
+type pluginContext struct{}
 
 type GoPluginContext interface {
 	PluginGetContext(ctx unsafe.Pointer) interface{}
@@ -229,9 +229,8 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	logger.Infof("[flb-go %d] plugin autoCreateBucket parameter = '%s'", operatorID, autoCreateBucket)
 	logger.Infof("[flb-go %d] plugin timeZone parameter = '%s'", operatorID, timeZone)
 
-
 	cfg := aws.Config{
-		Region:      config.region,
+		Region: config.region,
 	}
 	if config.credentials != nil {
 		cfg.WithCredentials(config.credentials)
@@ -241,7 +240,7 @@ func newS3Output(ctx unsafe.Pointer, operatorID int) (*s3operator, error) {
 	}
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config: cfg,
+		Config:            cfg,
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
