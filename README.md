@@ -23,7 +23,7 @@ Or,
 
 
 ```bash
-$ docker build . -t fluent-bit/s3-plugin
+$ make build-image
 ```
 
 and then, specify configuration parameters as environment variables:
@@ -34,8 +34,8 @@ $ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
                  -e="FLUENT_BIT_BUCKET_NAME=yourbucketname" \
                  -e="FLUENT_BIT_S3_PREFIX=yours3prefix" \
                  -e="FLUENT_BIT_REGION=awsregion" \
-                 -e "FLUENT_BIT_SUFFIX_ALGORITHM=algorithm" \
-                 fluent-bit/s3-plugin
+                 -e="FLUENT_BIT_SUFFIX_ALGORITHM=algorithm" \
+                 cosmo0920/fluent-bit-go-s3[:built-image-version]
 ```
 
 Using docker image from docker hub.
