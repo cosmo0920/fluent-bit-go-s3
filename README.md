@@ -79,7 +79,7 @@ $ make
 | Endpoint         | Specify the endpoint URL              | `""`            | URL with port or empty string                                        |
 | AutoCreateBucket | Create bucket automatically           | `false`         | true/false                                                           |
 | LogLevel         | Specify Log Level                     | `"info"`        | trace/debug/info/warning/error/fatal/panic                           |
-| TimeFormat       | Time format to add to the S3 path     | `"20060102/15"` | Specify in [Go's Time Format](https://golang.org/src/time/format.go) | 
+| TimeFormat       | Time format to add to the S3 path     | `"20060102/15"` | Specify in [Go's Time Format](https://golang.org/src/time/format.go) |
 | TimeZone         | Specify TimeZone                      | `""`            | Specify TZInfo based region. e.g.) Asia/Tokyo                        |
 
 Example:
