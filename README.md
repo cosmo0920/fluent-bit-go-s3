@@ -94,14 +94,14 @@ Add this section to fluent-bit.conf:
     AccessKeyID     yourawsaccesskeyid
     SecretAccessKey yourawssecretaccesskey
     Bucket          yourbucketname
-    S3Prefix yours3prefixname
+    S3Prefix        yours3prefixname
     SuffixAlgorithm sha256
-    Region us-east-1
-    Compress gzip
+    Region          us-east-1
+    Compress        gzip
     # Endpoint parameter is mainly used for minio.
-    # Endpoint http://localhost:9000
-    # TimeFormat 20060102/15
-    # TimeZone Asia/Tokyo
+    # Endpoint      http://localhost:9000
+    # TimeFormat    20060102/15
+    # TimeZone      Asia/Tokyo
 ```
 
 ## Credentials
