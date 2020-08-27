@@ -41,7 +41,7 @@ $ docker run -it -e="FLUENT_BIT_ACCESS_KEY_ID=yourawsaccesskey" \
 Using docker image from docker hub.
 
 ```bash
-$ docker pull cosmo0920/fluent-bit-go-s3:latest
+$ docker pull cosmo0920/fluent-bit-go-s3[:latest or other tag]
 ```
 
 Other released images are available in [DockerHub's fluent-bit-go-s3 image tags](https://hub.docker.com/r/cosmo0920/fluent-bit-go-s3/tags).
