@@ -7,6 +7,7 @@ else
 endif
 
 VERSION := 0.7.2
+DOCKER_IMAGE_VERSION := 1.0
 
 # Version info for binaries
 GIT_REVISION := $(shell git rev-parse --short HEAD)
@@ -32,7 +33,7 @@ clean:
 	rm -rf *$(DLLEXT) *.h
 
 build-image:
-	docker build . -t cosmo0920/fluent-bit-go-s3:v$(VERSION)
+	docker build . -t cosmo0920/fluent-bit-go-s3:v$(VERSION)-$(DOCKER_IMAGE_VERSION)
 
 publish-image:
-	docker push cosmo0920/fluent-bit-go-s3:v$(VERSION)
+	docker push cosmo0920/fluent-bit-go-s3:v$(VERSION)-$(DOCKER_IMAGE_VERSION)
