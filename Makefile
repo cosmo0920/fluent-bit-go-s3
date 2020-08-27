@@ -7,7 +7,7 @@ else
 endif
 
 VERSION := 0.7.2
-DOCKER_IMAGE_VERSION := 1.0
+DOCKER_IMAGE_VERSION := 2.0
 
 # Version info for binaries
 GIT_REVISION := $(shell git rev-parse --short HEAD)
